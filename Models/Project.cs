@@ -28,8 +28,6 @@ namespace taskmanager.Models
         public required User User {get; set;}
         public ICollection<ProjectMember> ProjectMemberships {get; set;} = new List<ProjectMember>();
         public ICollection<TaskItem> Tasks {get; set;} = new List<TaskItem>();
-
-
     }
 
     public enum EnumStatus
