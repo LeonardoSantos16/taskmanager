@@ -9,8 +9,8 @@ namespace taskmanager.Repositories
     {
         Task<IEnumerable<T>> GetAllAsync();
         Task<T?> GetByIdAsync(int id);
-        T Create(T entity);
-        T Update(T entity);
-        T Delete(T entity);
+        Task<T> Create(T entity);
+        Task<T> Update(T entity);
+        Task<T> Delete(T entity);
     }
 }

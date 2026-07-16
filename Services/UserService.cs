@@ -13,14 +13,14 @@ namespace taskmanager.Services
     public class UserService
     {
         private readonly PasswordHasher<User> _hasher = new();
-        private readonly IUserRepository _userRepository;
+        private IUserRepository _userRepository;
 
         public UserService(IUserRepository userRepository)
         {
             _userRepository = userRepository;
         }
 
-        public void RegisterUser(UserDtoRequest userDtoRequest)
+        public async Task RegisterUser(UserDtoRequest userDtoRequest)
         {
             if (!IsValidEmail(userDtoRequest.Email))
             {
@@ -43,15 +43,73 @@ namespace taskmanager.Services
 
             user.PasswordHash = HashPassword(user, userDtoRequest.Password);
 
-            _userRepository.GetByEmailAsync(userDtoRequest.Email).ContinueWith(task =>
+            var existingUser = await _userRepository.GetByEmailAsync(userDtoRequest.Email);
+            if (existingUser != null)
             {
-                if (task.Result != null)
-                {
-                    throw new ArgumentException("Email already exists.");
-                }
-            }).Wait();
-            
-            _userRepository.Create(user);
+                throw new ArgumentException("Email already exists.");
+            }
+
+            await _userRepository.Create(user);
+        }
+
+        public async Task<UserDtoResponse> GetUserById(int id)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+
+            if (user == null)
+            {
+                throw new ArgumentException("User not found.");
+            }
+
+            return new UserDtoResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email
+            };
+        }
+
+        public void UpdateUserPassword(string email, string newPassword)
+        {
+            if (!IsValidPassword(newPassword))
+            {
+                throw new ArgumentException("Invalid password format.");
+            }
+
+            var user = _userRepository.GetByEmailAsync(email).Result;
+
+            if (user == null)
+            {
+                throw new ArgumentException("User not found.");
+            }
+
+            user.PasswordHash = HashPassword(user, newPassword);
+            _userRepository.Update(user);
+        }
+
+        public void UpdateUserName(string email, string newName)
+        {
+            var user = _userRepository.GetByEmailAsync(email).Result;
+
+            if (user == null)
+            {
+                throw new ArgumentException("User not found.");
+            }
+
+            user.Name = newName;
+            _userRepository.Update(user);
+        }
+
+        public void DeleteUser(string email)
+        {
+            var user = _userRepository.GetByEmailAsync(email).Result;
+
+            if (user == null)
+            {
+                throw new ArgumentException("User not found.");
+            }
+
+            _userRepository.Delete(user);
         }
 
         public bool IsValidEmail(string email)

@@ -1,0 +1,16 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using taskmanager.Models;
+
+namespace taskmanager.DTOs
+{
+    public record ProjectDtoRequest
+    {
+        public string Name { get; init; } = string.Empty;
+        public string? Description { get; init; }
+        public EnumStatus Status { get; init; } = EnumStatus.Active;
+        public Guid OwnerId { get; init; }
+    }
+}

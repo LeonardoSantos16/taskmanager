@@ -14,17 +14,17 @@ namespace taskmanager.Repositories
         {
             _context = context;
         }
-        public T Create(T entity)
+        public async Task<T> Create(T entity)
         {
             _context.Set<T>().Add(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return entity;
         }
 
-        public T Delete(T entity)
+        public async Task<T> Delete(T entity)
         {
             _context.Set<T>().Remove(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return entity;
         }
 
@@ -39,10 +39,10 @@ namespace taskmanager.Repositories
             return await _context.Set<T>().FindAsync(id);
         }
 
-        public T Update(T entity)
+        public async Task<T> Update(T entity)
         {
             _context.Set<T>().Update(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return entity;
         }
     }

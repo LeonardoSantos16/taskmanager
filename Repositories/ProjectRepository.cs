@@ -22,5 +22,10 @@ namespace taskmanager.Repositories
                 _context.Update(project);
             }
         }
+
+        public async Task<bool> OwnerExistsAsync(Guid ownerId)
+        {
+            return await _context.Users.FindAsync(ownerId) != null;
+        }
     }
 }

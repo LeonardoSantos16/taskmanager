@@ -1,0 +1,55 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using taskmanager.Repositories;
+using taskmanager.DTOs;
+using taskmanager.Models;
+using taskmanager.DTOs.Mappings;
+namespace taskmanager.Services
+{
+    public class ProjectService
+    {
+        private IProjectRepository _projectRepository;
+        public ProjectService(IProjectRepository projectRepository)
+        {
+            _projectRepository = projectRepository;
+        }
+
+        public async Task<ProjectDtoResponse> GetProjectByIdAsync(int id)
+        {
+            var project = await _projectRepository.GetByIdAsync(id);
+            if (project == null)
+            {
+                throw new ArgumentException("Project not found.");
+            }
+
+            return new ProjectDtoResponse
+            {
+                Id = project.Id,
+                Name = project.Name,
+                Description = project.Description,
+                Status = project.Status,
+                CreatedAt = project.CreatedAt,
+                UpdatedAt = project.UpdatedAt,
+                OwnerId = project.OwnerId
+            };
+        }
+
+        public async Task<ProjectDtoResponse> CreateProjectAsync(ProjectDtoRequest projectDto)
+        {
+            var ownerExists = await _projectRepository.OwnerExistsAsync(projectDto.OwnerId);
+            if (!ownerExists)
+            {
+                throw new ArgumentException("Owner not found.");
+            }
+
+            var project = projectDto.ToModel();
+
+            var createdProject = await _projectRepository.Create(project);
+
+            return createdProject.ToDtoResponse();
+        }
+        
+    }
+}

@@ -25,7 +25,7 @@ namespace taskmanager.Models
         public required Guid OwnerId { get; set; }
         [ForeignKey(nameof(OwnerId))]
         [JsonIgnore]
-        public required User User {get; set;}
+        public User? User {get; set;}
         public ICollection<ProjectMember> ProjectMemberships {get; set;} = new List<ProjectMember>();
         public ICollection<TaskItem> Tasks {get; set;} = new List<TaskItem>();
     }
