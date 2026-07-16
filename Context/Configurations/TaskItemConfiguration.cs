@@ -16,7 +16,7 @@ namespace taskmanager.Context.Configurations
                 .HasOne(t => t.UserAssigned)
                 .WithMany(u => u.TasksAssigned)
                 .HasForeignKey(t => t.AssignedToId)
-                .OnDelete(DeleteBehavior.SetNull); 
+                .OnDelete(DeleteBehavior.Restrict); 
             
             builder
                 .HasOne(t => t.UserCreated)
