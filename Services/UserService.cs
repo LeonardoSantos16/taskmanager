@@ -32,7 +32,12 @@ namespace taskmanager.Services
                 throw new ArgumentException("Invalid password format.");
             }
             
-
+            var emailExists = await _userRepository.GetByEmailAsync(userDtoRequest.Email);
+            if (emailExists != null)
+            {
+                throw new ArgumentException("Email already exists");
+            }
+            
             var user = new User
             {
                 Name = userDtoRequest.Name,
@@ -52,7 +57,7 @@ namespace taskmanager.Services
             await _userRepository.Create(user);
         }
 
-        public async Task<UserDtoResponse> GetUserById(int id)
+        public async Task<UserDtoResponse> GetUserById(Guid id)
         {
             var user = await _userRepository.GetByIdAsync(id);
 
@@ -87,9 +92,9 @@ namespace taskmanager.Services
             _userRepository.Update(user);
         }
 
-        public void UpdateUserName(string email, string newName)
+        public async void UpdateUserName(string email, string newName)
         {
-            var user = _userRepository.GetByEmailAsync(email).Result;
+            var user = await _userRepository.GetByEmailAsync(email);
 
             if (user == null)
             {
@@ -97,19 +102,19 @@ namespace taskmanager.Services
             }
 
             user.Name = newName;
-            _userRepository.Update(user);
+            await _userRepository.Update(user);
         }
 
-        public void DeleteUser(string email)
+        public async void DeleteUser(string email)
         {
-            var user = _userRepository.GetByEmailAsync(email).Result;
+            var user = await _userRepository.GetByEmailAsync(email);
 
             if (user == null)
             {
                 throw new ArgumentException("User not found.");
             }
 
-            _userRepository.Delete(user);
+            await _userRepository.Delete(user);
         }
 
         public bool IsValidEmail(string email)

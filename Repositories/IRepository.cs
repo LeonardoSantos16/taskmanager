@@ -8,7 +8,7 @@ namespace taskmanager.Repositories
     public interface IRepository<T>
     {
         Task<IEnumerable<T>> GetAllAsync();
-        Task<T?> GetByIdAsync(int id);
+        Task<T?> GetByIdAsync(Guid id);
         Task<T> Create(T entity);
         Task<T> Update(T entity);
         Task<T> Delete(T entity);

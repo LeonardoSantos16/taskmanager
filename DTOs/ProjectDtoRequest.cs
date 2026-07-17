@@ -8,6 +8,7 @@ namespace taskmanager.DTOs
 {
     public record ProjectDtoRequest
     {
+        public Guid? Id { get; init; }
         public string Name { get; init; } = string.Empty;
         public string? Description { get; init; }
         public EnumStatus Status { get; init; } = EnumStatus.Active;

@@ -16,7 +16,7 @@ namespace taskmanager.Services
             _projectRepository = projectRepository;
         }
 
-        public async Task<ProjectDtoResponse> GetProjectByIdAsync(int id)
+        public async Task<ProjectDtoResponse> GetProjectByIdAsync(Guid id)
         {
             var project = await _projectRepository.GetByIdAsync(id);
             if (project == null)
@@ -38,17 +38,55 @@ namespace taskmanager.Services
 
         public async Task<ProjectDtoResponse> CreateProjectAsync(ProjectDtoRequest projectDto)
         {
+            // TODO: OwnerId validation JWt
             var ownerExists = await _projectRepository.OwnerExistsAsync(projectDto.OwnerId);
             if (!ownerExists)
             {
                 throw new ArgumentException("Owner not found.");
             }
-
             var project = projectDto.ToModel();
 
             var createdProject = await _projectRepository.Create(project);
 
             return createdProject.ToDtoResponse();
+        }
+
+        public async void DeleteProject (Guid projectId, Guid OwnerId)
+        {
+            var project = await _projectRepository.GetByIdAsync(projectId);
+            if (project == null)
+            {
+                throw new ArgumentException("projectId not found");
+            }
+            await _projectRepository.Delete(project);
+        }
+
+        public async Task<ProjectDtoResponse> UpdateProjectAsync(ProjectDtoUpdateRequest projectDto, Guid projectId)
+        {
+            var project = await _projectRepository.GetByIdAsync(projectId);
+            if (project == null)
+            {
+                throw new ArgumentException("Project not found.");
+            }
+
+            projectDto.ApplyToPut(project);
+
+            var updatedProject = await _projectRepository.Update(project);
+            return updatedProject.ToDtoResponse();
+        }
+
+        public async Task<ProjectDtoResponse> PatchProjectAsync(ProjectDtoPatchRequest projectDto, Guid projectId)
+        {
+            var project = await _projectRepository.GetByIdAsync(projectId);
+            if (project == null)
+            {
+                throw new ArgumentException("Project not found.");
+            }
+
+            projectDto.ApplyToPatch(project);
+
+            var updatedProject = await _projectRepository.Update(project);
+            return updatedProject.ToDtoResponse();
         }
         
     }

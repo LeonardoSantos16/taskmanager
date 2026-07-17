@@ -33,5 +33,27 @@ namespace taskmanager.DTOs.Mappings
                 OwnerId = projectDto.OwnerId
             };
         }
-    }
+
+        public static void ApplyToPut(this ProjectDtoUpdateRequest request, Project project)
+        {
+            project.Name = request.Name;
+            project.Description = request.Description;
+            project.Status = request.Status;
+            project.UpdatedAt = DateTime.UtcNow;
+        }
+
+        public static void ApplyToPatch(this ProjectDtoPatchRequest request, Project project)
+        {
+            if (!string.IsNullOrWhiteSpace(request.Name))
+                project.Name = request.Name;
+
+            if (request.Description is not null)
+                project.Description = request.Description;
+
+            if (request.Status.HasValue)
+                project.Status = request.Status.Value;
+
+            project.UpdatedAt = DateTime.UtcNow;
+        }
+   }
 }
