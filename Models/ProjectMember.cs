@@ -23,10 +23,10 @@ namespace taskmanager.Models
         public required DateTime JoinedAt { get; set; }
         [ForeignKey(nameof(UserId))]
         [JsonIgnore]
-        public required User User {get; set;}
+        public User? User {get; set;}
         [ForeignKey(nameof(ProjectId))]
         [JsonIgnore]
-        public required Project Project {get; set;}
+        public Project? Project {get; set;}
     }
 
     public enum EnumRole
