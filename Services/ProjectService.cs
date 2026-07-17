@@ -8,7 +8,7 @@ using taskmanager.Models;
 using taskmanager.DTOs.Mappings;
 namespace taskmanager.Services
 {
-    public class ProjectService
+    public class ProjectService : IProjectService
     {
         private IProjectRepository _projectRepository;
         public ProjectService(IProjectRepository projectRepository)
@@ -51,7 +51,7 @@ namespace taskmanager.Services
             return createdProject.ToDtoResponse();
         }
 
-        public async void DeleteProject (Guid projectId, Guid OwnerId)
+        public async Task DeleteProject (Guid projectId, Guid OwnerId)
         {
             var project = await _projectRepository.GetByIdAsync(projectId);
             if (project == null)
@@ -88,6 +88,5 @@ namespace taskmanager.Services
             var updatedProject = await _projectRepository.Update(project);
             return updatedProject.ToDtoResponse();
         }
-        
     }
 }

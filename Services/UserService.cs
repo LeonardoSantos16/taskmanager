@@ -10,7 +10,7 @@ using taskmanager.Repositories;
 
 namespace taskmanager.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
         private readonly PasswordHasher<User> _hasher = new();
         private IUserRepository _userRepository;
@@ -44,15 +44,7 @@ namespace taskmanager.Services
                 Email = userDtoRequest.Email,
                 PasswordHash = ""
             };
-            
-
             user.PasswordHash = HashPassword(user, userDtoRequest.Password);
-
-            var existingUser = await _userRepository.GetByEmailAsync(userDtoRequest.Email);
-            if (existingUser != null)
-            {
-                throw new ArgumentException("Email already exists.");
-            }
 
             await _userRepository.Create(user);
         }
@@ -74,14 +66,14 @@ namespace taskmanager.Services
             };
         }
 
-        public void UpdateUserPassword(string email, string newPassword)
+        public async Task UpdateUserPassword(string email, string newPassword)
         {
             if (!IsValidPassword(newPassword))
             {
                 throw new ArgumentException("Invalid password format.");
             }
 
-            var user = _userRepository.GetByEmailAsync(email).Result;
+            var user = await _userRepository.GetByEmailAsync(email);
 
             if (user == null)
             {
@@ -89,10 +81,10 @@ namespace taskmanager.Services
             }
 
             user.PasswordHash = HashPassword(user, newPassword);
-            _userRepository.Update(user);
+            await _userRepository.Update(user);
         }
 
-        public async void UpdateUserName(string email, string newName)
+        public async Task UpdateUserName(string email, string newName)
         {
             var user = await _userRepository.GetByEmailAsync(email);
 
@@ -105,7 +97,7 @@ namespace taskmanager.Services
             await _userRepository.Update(user);
         }
 
-        public async void DeleteUser(string email)
+        public async Task DeleteUser(string email)
         {
             var user = await _userRepository.GetByEmailAsync(email);
 

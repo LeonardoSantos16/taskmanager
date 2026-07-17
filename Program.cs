@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using taskmanager.Context;
+using taskmanager.Models;
+using taskmanager.Repositories;
+using taskmanager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
