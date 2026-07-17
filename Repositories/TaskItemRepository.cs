@@ -8,13 +8,13 @@ using taskmanager.DTOs;
 
 namespace taskmanager.Repositories
 {
-    public class TaskItemRepository: Repository<TaskItem>, ITaskItem
+    public class TaskItemRepository: Repository<TaskItem>, ITaskItemRepository
     {
         public TaskItemRepository(AppDbContext context) : base(context)
         {
         }
 
-        public async Task<IEnumerable<TaskItem>> GetFilteredAsync(Guid projectId, TaskFilter filter)
+        public async Task<IEnumerable<TaskItem>> GetFilteredAsync(Guid projectId, TaskItemFilterDto filter)
         {
             var query = _context.TaskItems.AsQueryable();
 

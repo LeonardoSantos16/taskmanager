@@ -46,7 +46,7 @@ namespace taskmanager.Services
             };
             user.PasswordHash = HashPassword(user, userDtoRequest.Password);
 
-            await _userRepository.Create(user);
+            await _userRepository.CreateAsync(user);
         }
 
         public async Task<UserDtoResponse> GetUserById(Guid id)
@@ -81,7 +81,7 @@ namespace taskmanager.Services
             }
 
             user.PasswordHash = HashPassword(user, newPassword);
-            await _userRepository.Update(user);
+            await _userRepository.UpdateAsync(user);
         }
 
         public async Task UpdateUserName(string email, string newName)
@@ -94,7 +94,7 @@ namespace taskmanager.Services
             }
 
             user.Name = newName;
-            await _userRepository.Update(user);
+            await _userRepository.UpdateAsync(user);
         }
 
         public async Task DeleteUser(string email)
@@ -106,7 +106,7 @@ namespace taskmanager.Services
                 throw new ArgumentException("User not found.");
             }
 
-            await _userRepository.Delete(user);
+            await _userRepository.DeleteAsync(user);
         }
 
         public bool IsValidEmail(string email)

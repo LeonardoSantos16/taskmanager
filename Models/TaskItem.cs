@@ -30,13 +30,13 @@ namespace taskmanager.Models
         public DateTime? CompletedAt { get; set; }
         [ForeignKey(nameof(ProjectId))]
         [JsonIgnore]
-        public required Project Project {get; set;}
+        public Project? Project {get; set;}
         [ForeignKey(nameof(AssignedToId))]
         [JsonIgnore]
         public User? UserAssigned {get; set;}
         [ForeignKey(nameof(CreatedById))]
         [JsonIgnore]
-        public required User UserCreated {get; set;}
+        public User? UserCreated {get; set;}
         public ICollection<TaskComment> Comments { get; set; } = new List<TaskComment>();
     }
 

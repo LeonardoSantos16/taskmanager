@@ -46,7 +46,7 @@ namespace taskmanager.Services
             }
             var project = projectDto.ToModel();
 
-            var createdProject = await _projectRepository.Create(project);
+            var createdProject = await _projectRepository.CreateAsync(project);
 
             return createdProject.ToDtoResponse();
         }
@@ -58,7 +58,7 @@ namespace taskmanager.Services
             {
                 throw new ArgumentException("projectId not found");
             }
-            await _projectRepository.Delete(project);
+            await _projectRepository.DeleteAsync(project);
         }
 
         public async Task<ProjectDtoResponse> UpdateProjectAsync(ProjectDtoUpdateRequest projectDto, Guid projectId)
@@ -71,7 +71,7 @@ namespace taskmanager.Services
 
             projectDto.ApplyToPut(project);
 
-            var updatedProject = await _projectRepository.Update(project);
+            var updatedProject = await _projectRepository.UpdateAsync(project);
             return updatedProject.ToDtoResponse();
         }
 
@@ -85,8 +85,19 @@ namespace taskmanager.Services
 
             projectDto.ApplyToPatch(project);
 
-            var updatedProject = await _projectRepository.Update(project);
+            var updatedProject = await _projectRepository.UpdateAsync(project);
             return updatedProject.ToDtoResponse();
+        }
+
+        public async Task ChangeProjectStatusAsync(Guid projectId, EnumStatus newStatus)
+        {
+            var project = await _projectRepository.GetByIdAsync(projectId);
+            if (project == null)
+            {
+                throw new ArgumentException("Project not found.");
+            }
+
+            _projectRepository.ChangeProjectStatus(projectId, newStatus);
         }
     }
 }
