@@ -53,9 +53,7 @@ namespace taskmanager.DTOs.Mappings
             task.Title = request.Title;
             task.Status = request.Status;
             task.UpdatedAt = DateTime.UtcNow;
-
-            task.CompletedAt = request.Status == EnumStatusTask.Done ? task.CompletedAt 
-                ?? DateTime.UtcNow : null;
+            UpdateCompletedAt(task);
         }
 
         public static void ApplyToPatch(this TaskItemDtoPatchRequest request, TaskItem task)
@@ -71,8 +69,7 @@ namespace taskmanager.DTOs.Mappings
 
                 task.Status = request.Status.Value;
 
-                if (task.Status == EnumStatusTask.Done)
-                    task.CompletedAt = DateTime.UtcNow;
+                UpdateCompletedAt(task);
             }
 
             if (request.Priority.HasValue)
@@ -85,6 +82,12 @@ namespace taskmanager.DTOs.Mappings
                 task.DueDate = request.DueDate.Value;
 
             task.UpdatedAt = DateTime.UtcNow;
+        }
+
+        private static void UpdateCompletedAt(TaskItem task){
+            task.CompletedAt = task.Status == EnumStatusTask.Done
+                ? DateTime.UtcNow
+                : null;
         }
     }
 }

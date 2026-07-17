@@ -23,10 +23,10 @@ namespace taskmanager.Models
         public DateTime CreatedAt { get; set; }
         [ForeignKey(nameof(TaskItemId))]
         [JsonIgnore]
-        public required TaskItem TaskItem { get; set;}
+        public TaskItem? TaskItem { get; set;}
         [ForeignKey(nameof(AuthorId))]
         [JsonIgnore]
-        public required User User {get; set;}
+        public User? User {get; set;}
 
     }
 }
