@@ -8,7 +8,6 @@ namespace taskmanager.Repositories
 {
     public interface IProjectRepository : IRepository<Project>
     {
-        void ChangeProjectStatus(Guid projectId, EnumStatus newStatus);
         Task<bool> OwnerExistsAsync(Guid ownerId);
     }
 }

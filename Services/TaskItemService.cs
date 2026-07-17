@@ -19,9 +19,15 @@ namespace taskmanager.Services
             _taskItemRepository = taskItemRepository;
             _projectService = projectService;
         }
-        public Task ChangeTaskItemStatusAsync(Guid taskItemId, EnumStatus newStatus)
+        public async Task ChangeTaskItemStatusAsync(Guid taskItemId, EnumStatusTask newStatus)
         {
-            throw new NotImplementedException();
+            var taskItem = await _taskItemRepository.GetByIdAsync(taskItemId);
+            if (taskItem == null)
+            {
+                throw new ArgumentException($"Task with ID {taskItemId} does not exist.");
+            }
+            taskItem.Status = newStatus;
+            await _taskItemRepository.UpdateAsync(taskItem);
         }
 
         public async Task CreateTaskItemAsync(TaskItemDtoRequest taskItemDto, Guid ProjectId)
@@ -31,6 +37,11 @@ namespace taskmanager.Services
             {
                 throw new ArgumentException($"Project with ID {ProjectId} does not exist.");
             }
+
+            ValidateDueDate(taskItemDto.DueDate, DateTime.UtcNow);
+            ValidatePriority(taskItemDto.Priority);
+            ValidateStatus(taskItemDto.Status);
+            
             var taskItem = taskItemDto.ToModel();
             await _taskItemRepository.CreateAsync(taskItem);
         }
@@ -54,19 +65,50 @@ namespace taskmanager.Services
             return await _taskItemRepository.GetByIdAsync(id);
         }
 
-        public Task<bool> IsValidDueDateAsync(DateTime dueDate)
+        public void ValidateDueDate(DateTime dueDate, DateTime createdDate)
         {
-            throw new NotImplementedException();
+            var isValidDate = dueDate > createdDate;
+            if (!isValidDate)
+            {
+                throw new ArgumentException("Due date cannot be earlier than the task creation date.");
+            }
         }
 
-        public Task<bool> isValidStatusTransitionAsync(EnumStatus currentStatus, EnumStatus newStatus)
+        public void ValidateStatus(EnumStatusTask newStatus)
         {
-            throw new NotImplementedException();
+            if (!Enum.IsDefined(typeof(EnumStatusTask), newStatus))
+            {
+                throw new ArgumentException(
+                    $"The status '{newStatus}' is not a valid value of {nameof(EnumStatusTask)}.",
+                    nameof(newStatus));
+            }
         }
 
-        public Task PatchTaskItemAsync(TaskItemDtoPatchRequest taskItemDto, Guid taskItemId)
+        public void ValidatePriority(EnumPriority? newPriority)
         {
-            throw new NotImplementedException();
+            if (newPriority != null && !Enum.IsDefined(typeof(EnumPriority), newPriority))
+            {
+                throw new ArgumentException($"The status '{newPriority}' is not a valid value of {nameof(EnumStatusTask)}.");
+            }
+        }
+      
+        public async Task<TaskItemDtoResponse> PatchTaskItemAsync(TaskItemDtoPatchRequest taskItemDto, Guid taskItemId)
+        {
+            var taskItem = await _taskItemRepository.GetByIdAsync(taskItemId) ?? throw new ArgumentException("Task not found.");
+            
+            if (taskItemDto.Priority.HasValue)
+                ValidatePriority(taskItemDto.Priority.Value);
+
+            if (taskItemDto.Status.HasValue)
+                ValidateStatus(taskItemDto.Status.Value);
+
+            if (taskItemDto.DueDate.HasValue)
+                ValidateDueDate(taskItemDto.DueDate.Value, taskItem.CreatedAt);
+
+            taskItemDto.ApplyToPatch(taskItem);
+
+            var updatedTask = await _taskItemRepository.UpdateAsync(taskItem);
+            return updatedTask.ToDtoResponse();
         }
 
         public async Task<bool> ProjectExistsAsync(Guid projectId)
@@ -81,9 +123,17 @@ namespace taskmanager.Services
             return taskItem != null;
         }
 
-        public Task UpdateTaskItemAsync(TaskItemDtoUpdateRequest taskItemDto, Guid taskItemId)
+        public async Task<TaskItemDtoResponse> UpdateTaskItemAsync(TaskItemDtoUpdateRequest taskItemDto, Guid taskItemId)
         {
-            throw new NotImplementedException();
+            var taskItem = await _taskItemRepository.GetByIdAsync(taskItemId) ?? throw new ArgumentException("TaskItem not found.");
+            
+            ValidateDueDate(taskItemDto.DueDate, taskItem.CreatedAt);
+            ValidatePriority(taskItemDto.Priority);
+            ValidateStatus(taskItemDto.Status);
+
+            taskItemDto.ApplyToPut(taskItem);
+            var updatedTask = await _taskItemRepository.UpdateAsync(taskItem);
+            return updatedTask.ToDtoResponse();
         }
     }
 }

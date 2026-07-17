@@ -43,5 +43,48 @@ namespace taskmanager.DTOs.Mappings
                 CreatedAt = DateTime.UtcNow
             };
         }
+
+        public static void ApplyToPut(this TaskItemDtoUpdateRequest request, TaskItem task)
+        {
+            task.DueDate = request.DueDate;
+            task.Description = request.Description;
+            task.AssignedToId = request.AssignedToId;
+            task.Priority = request.Priority;
+            task.Title = request.Title;
+            task.Status = request.Status;
+            task.UpdatedAt = DateTime.UtcNow;
+
+            task.CompletedAt = request.Status == EnumStatusTask.Done ? task.CompletedAt 
+                ?? DateTime.UtcNow : null;
+        }
+
+        public static void ApplyToPatch(this TaskItemDtoPatchRequest request, TaskItem task)
+        {
+            if (!string.IsNullOrWhiteSpace(request.Title))
+                task.Title = request.Title;
+
+            if (request.Description is not null)
+                task.Description = request.Description;
+
+            if (request.Status.HasValue)
+            {
+
+                task.Status = request.Status.Value;
+
+                if (task.Status == EnumStatusTask.Done)
+                    task.CompletedAt = DateTime.UtcNow;
+            }
+
+            if (request.Priority.HasValue)
+                task.Priority = request.Priority.Value;
+
+            if (request.AssignedToId.HasValue)
+                task.AssignedToId = request.AssignedToId.Value;
+
+            if (request.DueDate.HasValue)
+                task.DueDate = request.DueDate.Value;
+
+            task.UpdatedAt = DateTime.UtcNow;
+        }
     }
 }

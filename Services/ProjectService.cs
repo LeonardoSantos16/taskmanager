@@ -91,13 +91,12 @@ namespace taskmanager.Services
 
         public async Task ChangeProjectStatusAsync(Guid projectId, EnumStatus newStatus)
         {
-            var project = await _projectRepository.GetByIdAsync(projectId);
-            if (project == null)
+            var project = await _projectRepository.GetByIdAsync(projectId) ?? throw new ArgumentException("Project not found.");
+            if (project != null)
             {
-                throw new ArgumentException("Project not found.");
+                project.Status = newStatus;
+                await _projectRepository.UpdateAsync(project);
             }
-
-            _projectRepository.ChangeProjectStatus(projectId, newStatus);
         }
     }
 }
