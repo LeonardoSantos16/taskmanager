@@ -63,5 +63,11 @@ namespace taskmanager.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<bool> IsMemberAsync(Guid projectId, Guid userId)
+        {
+            return await _context.ProjectMembers
+                .AnyAsync(m => m.ProjectId == projectId && m.UserId == userId);
+        }
     }
 }

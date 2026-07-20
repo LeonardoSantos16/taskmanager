@@ -14,5 +14,6 @@ namespace taskmanager.Repositories
         Task<ProjectMember> CreateAsync(ProjectMember member);
         Task<ProjectMember> UpdateAsync(ProjectMember member);
         Task DeleteAsync(Guid id);
+        Task<bool> IsMemberAsync(Guid projectId, Guid userId);
     }
 }

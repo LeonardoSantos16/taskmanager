@@ -21,5 +21,6 @@ namespace taskmanager.Services
         void ValidateStatus(EnumStatusTask newStatus);
         void ValidateDueDate(DateTime dueDate, DateTime createdDate);
         void ValidatePriority(EnumPriority? newPriority);
+        Task EnsureAssigneeIsProjectMemberAsync(Guid projectId, Guid assigneeId);
     }
 }

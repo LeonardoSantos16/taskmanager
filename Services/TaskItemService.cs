@@ -13,11 +13,13 @@ namespace taskmanager.Services
     {
         private readonly ITaskItemRepository _taskItemRepository;
         private readonly IProjectService _projectService;
+        private readonly IProjectMemberService _projectMemberService;
 
-        public TaskItemService(ITaskItemRepository taskItemRepository, IProjectService projectService)
+        public TaskItemService(ITaskItemRepository taskItemRepository, IProjectService projectService, IProjectMemberService projectMemberService)
         {
             _taskItemRepository = taskItemRepository;
             _projectService = projectService;
+            _projectMemberService = projectMemberService;
         }
         public async Task ChangeTaskItemStatusAsync(Guid taskItemId, EnumStatusTask newStatus)
         {
@@ -30,15 +32,13 @@ namespace taskmanager.Services
             await _taskItemRepository.UpdateAsync(taskItem);
         }
 
-        public async Task CreateTaskItemAsync(TaskItemDtoRequest taskItemDto, Guid ProjectId)
+        public async Task CreateTaskItemAsync(TaskItemDtoRequest taskItemDto, Guid projectId)
         {
-            var projectExists = await _projectService.GetProjectByIdAsync(ProjectId);
-            if (projectExists == null)
-            {
-                throw new ArgumentException($"Project with ID {ProjectId} does not exist.");
-            }
+            var projectExists = await _projectService.GetProjectByIdAsync(projectId) ?? throw new ArgumentException($"Project with ID {projectId} does not exist.");
             _projectService.EnsureProjectIsNotArchived(projectExists);
-
+            if (taskItemDto.AssignedToId.HasValue){
+                await EnsureAssigneeIsProjectMemberAsync(projectId, taskItemDto.AssignedToId.Value);
+            }
             ValidateDueDate(taskItemDto.DueDate, DateTime.UtcNow);
             ValidatePriority(taskItemDto.Priority);
             ValidateStatus(taskItemDto.Status);
@@ -106,6 +106,10 @@ namespace taskmanager.Services
             if (taskItemDto.DueDate.HasValue)
                 ValidateDueDate(taskItemDto.DueDate.Value, taskItem.CreatedAt);
 
+            if (taskItemDto.AssignedToId.HasValue)
+                await EnsureAssigneeIsProjectMemberAsync(taskItem.ProjectId, taskItemDto.AssignedToId.Value);
+
+
             taskItemDto.ApplyToPatch(taskItem);
 
             var updatedTask = await _taskItemRepository.UpdateAsync(taskItem);
@@ -135,6 +139,14 @@ namespace taskmanager.Services
             taskItemDto.ApplyToPut(taskItem);
             var updatedTask = await _taskItemRepository.UpdateAsync(taskItem);
             return updatedTask.ToDtoResponse();
+        }        
+
+        public async Task EnsureAssigneeIsProjectMemberAsync(Guid projectId, Guid assigneeId)
+        {
+            var isMember = await _projectMemberService.IsMemberAsync(projectId, assigneeId);
+            if (!isMember)
+                throw new ArgumentException(
+                    "The assigned user must be a member of the project.", nameof(assigneeId));
         }
     }
 }

@@ -40,8 +40,7 @@ namespace taskmanager.Services
             throw new ArgumentException($"User with ID {dto.UserId} does not exist.");
 
         var existingMembership = await _memberRepository.GetMembershipAsync(projectId, dto.UserId);
-        if (existingMembership is not null)
-            throw new ArgumentException("This user is already a member of the project.");
+        EnsureUserIsNotAlreadyMember(existingMembership);
 
         ValidateRole(dto.Role);
 
@@ -53,10 +52,7 @@ namespace taskmanager.Services
     public async Task<ProjectMemberDtoResponse> UpdateMemberRoleAsync(
         ProjectMemberDtoPatchRequest dto, Guid memberId, Guid requesterId)
         {
-            var member = await _memberRepository.GetByIdAsync(memberId);
-            if (member is null)
-                throw new ArgumentException("Member not found.");
-
+            var member = await _memberRepository.GetByIdAsync(memberId) ?? throw new ArgumentException("Member not found.");
             await EnsureIsOwnerAsync(member.ProjectId, requesterId);
 
             if (dto.Role.HasValue)
@@ -74,10 +70,8 @@ namespace taskmanager.Services
             if (member is null)
                 throw new ArgumentException("Member not found.");
 
+            EnsureOwnerIsNotSelfRemoving(member, requesterId);
             await EnsureIsOwnerAsync(member.ProjectId, requesterId);
-
-            if (member.Role == EnumRole.Owner)
-                throw new InvalidOperationException("The project owner cannot be removed.");
 
             await _memberRepository.DeleteAsync(memberId);
         }
@@ -101,5 +95,26 @@ namespace taskmanager.Services
             if (membership is null || membership.Role != EnumRole.Owner)
                 throw new UnauthorizedAccessException("Only the project owner can perform this action.");
         }
+
+        public void EnsureUserIsNotAlreadyMember(ProjectMember? existingMembership)
+        {
+            if(existingMembership is not null)
+            {
+                throw new ArgumentException("This user is already a member of the project.");
+            }
+        }
+
+        public void EnsureOwnerIsNotSelfRemoving(ProjectMember member, Guid requesterId)
+        {
+            if (member.Role == EnumRole.Owner && member.UserId == requesterId)
+                throw new InvalidOperationException(
+                    "The project owner cannot remove themselves. Transfer ownership before leaving the project.");
+        }
+
+        public async Task<bool> IsMemberAsync(Guid projectId, Guid userId)
+        {
+            return await _memberRepository.IsMemberAsync(projectId, userId);
+        }
+
     }
 }
