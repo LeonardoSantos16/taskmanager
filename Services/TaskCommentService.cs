@@ -23,9 +23,9 @@ namespace taskmanager.Services
         }
         public async Task<TaskCommentDtoResponse> CreateCommentAsync(TaskCommentDtoRequest commentDto, Guid taskItemId, Guid authorId)
         {
-            var taskExist = await _taskItemService.GetTaskItemByIdAsync(taskItemId);
+            var taskExists = await _taskItemService.TaskItemExistsAsync(taskItemId);
 
-            if (taskExist == null)
+            if (!taskExists)
             {
                 throw new ArgumentException("task not found");
             }
@@ -48,8 +48,7 @@ namespace taskmanager.Services
             if (comment is null)
                 throw new ArgumentException("Comment not found.");
 
-            if (comment.AuthorId != userId)
-                throw new UnauthorizedAccessException("Only the comment author can delete this comment.");
+            VerifyAuthoririzedAuthor(commentId, userId);
 
             await _commentRepository.DeleteAsync(comment);
         }
@@ -64,9 +63,16 @@ namespace taskmanager.Services
         public async Task<TaskCommentDtoResponse> UpdateCommentAsync(TaskCommentDtoRequest commentDto, Guid commentId, Guid userId)
         {
             var comment = await _commentRepository.GetByIdAsync(commentId) ?? throw new ArgumentException("Comment not found.");
+            VerifyAuthoririzedAuthor(commentId, userId);
             comment.Content = commentDto.Content;
             var updatedTask = await _commentRepository.UpdateAsync(comment);
             return updatedTask.ToDtoResponse();
+        }
+
+        public void VerifyAuthoririzedAuthor(Guid authorId, Guid userId)
+        {
+            if (authorId != userId)
+                throw new UnauthorizedAccessException("Only the comment author can delete this comment.");
         }
     }
 }

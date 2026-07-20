@@ -11,29 +11,17 @@ namespace taskmanager.Services
     public class ProjectService : IProjectService
     {
         private IProjectRepository _projectRepository;
-        public ProjectService(IProjectRepository projectRepository)
+        private readonly IProjectMemberRepository _projectMemberRepository;
+        public ProjectService(IProjectRepository projectRepository, IProjectMemberRepository projectMemberRepository)
         {
             _projectRepository = projectRepository;
+            _projectMemberRepository = projectMemberRepository;
         }
 
         public async Task<ProjectDtoResponse> GetProjectByIdAsync(Guid id)
         {
-            var project = await _projectRepository.GetByIdAsync(id);
-            if (project == null)
-            {
-                throw new ArgumentException("Project not found.");
-            }
-
-            return new ProjectDtoResponse
-            {
-                Id = project.Id,
-                Name = project.Name,
-                Description = project.Description,
-                Status = project.Status,
-                CreatedAt = project.CreatedAt,
-                UpdatedAt = project.UpdatedAt,
-                OwnerId = project.OwnerId
-            };
+            var project = await _projectRepository.GetByIdAsync(id) ?? throw new ArgumentException("Project not found.");
+            return project.ToDtoResponse();
         }
 
         public async Task<ProjectDtoResponse> CreateProjectAsync(ProjectDtoRequest projectDto)
@@ -47,6 +35,16 @@ namespace taskmanager.Services
             var project = projectDto.ToModel();
 
             var createdProject = await _projectRepository.CreateAsync(project);
+            // TODO: implementar o UnitOfWork
+
+            var ownerMember = new ProjectMember
+            {
+                ProjectId = createdProject.Id,
+                UserId = createdProject.OwnerId,
+                Role = EnumRole.Owner,
+                JoinedAt = DateTime.UtcNow
+            };
+            await _projectMemberRepository.CreateAsync(ownerMember);
 
             return createdProject.ToDtoResponse();
         }
@@ -94,10 +92,15 @@ namespace taskmanager.Services
             }
         }
 
-        public void EnsureProjectIsNotArchived(ProjectDtoResponse project)
+        public void EnsureProjectIsNotArchived(Project project)
         {
             if (project.Status == EnumProjectStatus.Archived) 
                 throw new InvalidOperationException("Cannot perform this action because the project is archived.");
+        }
+
+        public async Task<Project> GetProjectEntityByIdAsync(Guid id)
+        {
+            return await _projectRepository.GetByIdAsync(id) ?? throw new ArgumentException("Project not found.");
         }
     }
 }

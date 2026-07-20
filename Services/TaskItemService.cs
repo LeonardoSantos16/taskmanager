@@ -32,9 +32,9 @@ namespace taskmanager.Services
             await _taskItemRepository.UpdateAsync(taskItem);
         }
 
-        public async Task CreateTaskItemAsync(TaskItemDtoRequest taskItemDto, Guid projectId)
+        public async Task<TaskItemDtoResponse> CreateTaskItemAsync(TaskItemDtoRequest taskItemDto, Guid projectId)
         {
-            var projectExists = await _projectService.GetProjectByIdAsync(projectId) ?? throw new ArgumentException($"Project with ID {projectId} does not exist.");
+            var projectExists = await _projectService.GetProjectEntityByIdAsync(projectId) ?? throw new ArgumentException($"Project with ID {projectId} does not exist.");
             _projectService.EnsureProjectIsNotArchived(projectExists);
             if (taskItemDto.AssignedToId.HasValue){
                 await EnsureAssigneeIsProjectMemberAsync(projectId, taskItemDto.AssignedToId.Value);
@@ -45,14 +45,16 @@ namespace taskmanager.Services
             ValidateStatus(taskItemDto.Status);
             
             var taskItem = taskItemDto.ToModel();
-            await _taskItemRepository.CreateAsync(taskItem);
+            var created = await _taskItemRepository.CreateAsync(taskItem);
+
+            return created.ToDtoResponse();
         }
 
         public async Task DeleteTaskItemAsync(Guid taskItemId)
         {
-
             var task = await _taskItemRepository.GetByIdAsync(taskItemId) ?? throw new ArgumentException($"Task with ID {taskItemId} does not exist.");
             await _taskItemRepository.DeleteAsync(task);    
+
         }
         public async Task<TaskItemDtoResponse> UpdateTaskItemAsync(TaskItemDtoUpdateRequest taskItemDto, Guid taskItemId)
         {
@@ -96,10 +98,10 @@ namespace taskmanager.Services
             return taskItemResponse;
         }
 
-        public async Task<TaskItem> GetTaskItemByIdAsync(Guid id)
+        public async Task<TaskItemDtoResponse> GetTaskItemByIdAsync(Guid id)
         {
-            var taskItem = await _taskItemRepository.GetByIdAsync(id) ?? throw new ArgumentException("Project not found.");
-            return taskItem;
+            var taskItem = await _taskItemRepository.GetByIdAsync(id) ?? throw new ArgumentException("task not found.");
+            return taskItem.ToDtoResponse();
         }
 
         public void ValidateDueDate(DateTime dueDate, DateTime createdDate)

@@ -13,7 +13,7 @@ namespace taskmanager.Services
         Task<ProjectMemberDtoResponse> UpdateMemberRoleAsync(ProjectMemberDtoPatchRequest dto, Guid memberId, Guid requesterId);
         Task RemoveMemberAsync(Guid memberId, Guid requesterId);
         Task<IEnumerable<ProjectMemberDtoResponse>> GetMembersByProjectIdAsync(Guid projectId);
-        void EnsureUserIsNotAlreadyMember(ProjectMember existingMembership);
+        void EnsureUserIsNotAlreadyMember(ProjectMember? existingMembership);
         Task<bool> IsMemberAsync(Guid projectId, Guid userId);
         void EnsureOwnerIsNotSelfRemoving(ProjectMember member, Guid requesterId);
     }

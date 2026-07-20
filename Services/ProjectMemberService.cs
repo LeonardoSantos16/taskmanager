@@ -28,8 +28,7 @@ namespace taskmanager.Services
         ProjectMemberDtoRequest dto, Guid projectId, Guid requesterId)
     {
         await EnsureIsOwnerAsync(projectId, requesterId);
-
-        var project = await _projectService.GetProjectByIdAsync(projectId);
+        var project = await _projectService.GetProjectEntityByIdAsync(projectId);
         if (project is null)
             throw new ArgumentException($"Project with ID {projectId} does not exist.");
 

@@ -15,6 +15,7 @@ namespace taskmanager.Services
         Task<ProjectDtoResponse> UpdateProjectAsync(ProjectDtoUpdateRequest projectDto, Guid projectId);
         Task<ProjectDtoResponse> PatchProjectAsync(ProjectDtoPatchRequest projectDto, Guid projectId);
         Task ChangeProjectStatusAsync(Guid projectId, EnumProjectStatus newStatus);
-        void EnsureProjectIsNotArchived (ProjectDtoResponse project);
+        void EnsureProjectIsNotArchived (Project project);
+        Task<Project> GetProjectEntityByIdAsync(Guid id); 
     }
 }
