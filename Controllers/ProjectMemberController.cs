@@ -19,7 +19,7 @@ namespace taskmanager.Controllers
         }
 
         [HttpPost("project/{projectId}/owner/{ownerId}")]
-        public async Task<ActionResult<ProjectMemberDtoResponse>> CreateMember (
+        public async Task<ActionResult<ProjectMemberDtoResponse>> CreateMember ([FromBody]
         ProjectMemberDtoRequest dto, Guid projectId, Guid ownerId)
         {
             var member = await _projectMemberService.AddMemberAsync(dto, projectId, ownerId);
@@ -28,7 +28,7 @@ namespace taskmanager.Controllers
         }
 
         [HttpPut("{memberId}/owner/{ownerId}")]
-        public async Task<ActionResult<ProjectMemberDtoResponse>> PutMember (
+        public async Task<ActionResult<ProjectMemberDtoResponse>> PutMember ([FromBody]
             ProjectMemberDtoPatchRequest dto, Guid memberId, Guid ownerId)
         {
             var memberUpdated = await _projectMemberService.UpdateMemberRoleAsync(dto, memberId, ownerId);

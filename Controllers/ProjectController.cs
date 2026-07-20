@@ -31,8 +31,7 @@ namespace taskmanager.Controllers
         public async Task<ActionResult<ProjectDtoResponse>> CreateProject([FromBody] ProjectDtoRequest projectDto)
         {
             var createdProject = await _projectService.CreateProjectAsync(projectDto);
-
-            return Ok(createdProject);
+            return CreatedAtAction(nameof(GetProject), new { id = createdProject.Id }, createdProject);
         }
 
         [HttpDelete("{projectId}/owner/{ownerId}")]        
@@ -44,7 +43,7 @@ namespace taskmanager.Controllers
         }
 
         [HttpPut("{projectId}")]
-        public async Task<ActionResult<ProjectDtoResponse>> PutProject(ProjectDtoUpdateRequest projectDto, Guid projectId)
+        public async Task<ActionResult<ProjectDtoResponse>> PutProject([FromBody] ProjectDtoUpdateRequest projectDto, Guid projectId)
         {
             var updatedProject = await _projectService.UpdateProjectAsync(projectDto, projectId);
 
@@ -52,7 +51,7 @@ namespace taskmanager.Controllers
         }
 
         [HttpPatch("{projectId}")]
-        public async Task<ActionResult<ProjectDtoResponse>> PatchProject(ProjectDtoPatchRequest projectDto, Guid projectId)
+        public async Task<ActionResult<ProjectDtoResponse>> PatchProject([FromBody] ProjectDtoPatchRequest projectDto, Guid projectId)
         {
             var updatedProject = await _projectService.PatchProjectAsync(projectDto, projectId);
 
@@ -60,11 +59,11 @@ namespace taskmanager.Controllers
         }
 
         [HttpPatch("{projectId}/status")]
-        public async Task<ActionResult> ChangeStatus(Guid projectId, EnumProjectStatus newStatus)
+        public async Task<ActionResult> ChangeStatus(Guid projectId, [FromBody] ChangeProjectStatusRequest request)
         {
-            await _projectService.ChangeProjectStatusAsync(projectId, newStatus);
+            await _projectService.ChangeProjectStatusAsync(projectId, request.NewStatus);
 
-            return Ok();
+            return NoContent();
         }
     }
 }

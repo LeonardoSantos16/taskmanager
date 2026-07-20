@@ -31,23 +31,23 @@ namespace taskmanager.Controllers
             return Ok(user);
         }
 
-        [HttpDelete]
-        public async Task<ActionResult> DeleteUser(string email)
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteUser(Guid id)
         {
-            await _userService.DeleteUser(email);
+            await _userService.DeleteUser(id);
             return NoContent();
         }
 
         [HttpPatch("password")]
-        public async Task<ActionResult> UpdatePassword(string email, string newPassword)
+        public async Task<ActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
         {
-            await _userService.UpdateUserPassword(email, newPassword);
+            await _userService.UpdateUserPassword(request.Email, request.NewPassword);
             return NoContent();
         } 
         [HttpPatch("username")]
-        public async Task<ActionResult> UpdateUsername(string email, string newPassword)
+        public async Task<ActionResult> UpdateUsername([FromBody] UpdateUsernameRequest request)
         {
-            await _userService.UpdateUserName(email, newPassword);
+            await _userService.UpdateUserName(request.Email, request.NewName);
             return NoContent();
         } 
     }

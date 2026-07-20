@@ -13,7 +13,7 @@ namespace taskmanager.Services
         Task<UserDtoResponse> GetUserById(Guid id);
         Task UpdateUserPassword(string email, string newPassword);
         Task UpdateUserName(string email, string newName);
-        Task DeleteUser(string email);
+        Task DeleteUser(Guid id);
         bool IsValidEmail(string email);
         bool IsValidPassword(string password);
         string HashPassword(User user, string password);

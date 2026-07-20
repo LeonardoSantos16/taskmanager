@@ -91,9 +91,9 @@ namespace taskmanager.Services
             await _userRepository.UpdateAsync(user);
         }
 
-        public async Task DeleteUser(string email)
+        public async Task DeleteUser(Guid id)
         {
-            var user = await _userRepository.GetByEmailAsync(email);
+            var user = await _userRepository.GetByIdAsync(id);
 
             if (user == null)
             {

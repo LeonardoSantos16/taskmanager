@@ -19,7 +19,7 @@ namespace taskmanager.Controllers
         }
 
         [HttpPost("task/{taskId}/author/{authorId}")]
-        public async Task<ActionResult<TaskCommentDtoResponse>> PostComment (TaskCommentDtoRequest commentDto, Guid taskId, Guid authorId)
+        public async Task<ActionResult<TaskCommentDtoResponse>> PostComment ([FromBody] TaskCommentDtoRequest commentDto, Guid taskId, Guid authorId)
         {
             var comment = await _taskCommentService.CreateCommentAsync(commentDto, taskId, authorId);
 
@@ -43,7 +43,7 @@ namespace taskmanager.Controllers
         }
 
         [HttpPut("{commentId}/author/{authorId}")]
-        public async Task<ActionResult<TaskCommentDtoResponse>> PutComment (TaskCommentDtoRequest commentDto, Guid commentId, Guid authorId)
+        public async Task<ActionResult<TaskCommentDtoResponse>> PutComment ([FromBody] TaskCommentDtoRequest commentDto, Guid commentId, Guid authorId)
         {
             var commentUpdated = await _taskCommentService.UpdateCommentAsync(commentDto, commentId, authorId);
 
