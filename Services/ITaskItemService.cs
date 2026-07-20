@@ -9,7 +9,7 @@ namespace taskmanager.Services
 {
     public interface ITaskItemService
     {
-        Task<TaskItem?> GetTaskItemByIdAsync(Guid id);
+        Task<TaskItem> GetTaskItemByIdAsync(Guid id);
         Task CreateTaskItemAsync(TaskItemDtoRequest taskItemDto, Guid ProjectId);
         Task DeleteTaskItemAsync(Guid taskItemId);
         Task<TaskItemDtoResponse> UpdateTaskItemAsync(TaskItemDtoUpdateRequest taskItemDto, Guid taskItemId);

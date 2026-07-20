@@ -1,0 +1,80 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using taskmanager.DTOs;
+using taskmanager.Models;
+using taskmanager.Services;
+
+namespace taskmanager.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class TaskController : ControllerBase
+    {
+        private readonly ITaskItemService _taskItemService;
+
+        public TaskController(ITaskItemService taskItemService)
+        {
+            _taskItemService = taskItemService;
+        }
+
+        [HttpGet("{taskId}")]
+        public async Task<ActionResult<TaskItem>> GetTask(Guid taskId)
+        {
+            var task = await _taskItemService.GetTaskItemByIdAsync(taskId);
+
+            return Ok(task);
+        }
+
+        [HttpPost("{projectId}")]
+        public async Task<ActionResult> CreateTask (TaskItemDtoRequest taskItemDto, Guid projectId)
+        {
+            await _taskItemService.CreateTaskItemAsync(taskItemDto, projectId);
+
+            return NoContent();
+        }
+
+        [HttpDelete("{taskId}")]
+        public async Task<ActionResult> DeleteTask(Guid taskId)
+        {
+            await _taskItemService.DeleteTaskItemAsync(taskId);
+
+            return NoContent();
+        }
+
+        [HttpPut("{taskId}")]
+        public async Task<ActionResult<TaskItemDtoResponse>> PutTask (TaskItemDtoUpdateRequest taskItemDto, Guid taskId)
+        {
+            var taskUpdated = await _taskItemService.UpdateTaskItemAsync(taskItemDto, taskId);
+
+            return Ok(taskUpdated);
+        }
+
+        [HttpPatch("{taskId}")]
+        public async Task<ActionResult<TaskItemDtoResponse>> PatchTask (TaskItemDtoPatchRequest taskItemDto, Guid taskId)
+        {
+            var taskUpdated = await _taskItemService.PatchTaskItemAsync(taskItemDto, taskId);
+
+            return Ok(taskUpdated);
+        }
+
+        [HttpPatch("{taskId}/status")]
+        public async Task<ActionResult> ChangeStatus (Guid taskId, EnumStatusTask newStatus)
+        {
+            await _taskItemService.ChangeTaskItemStatusAsync(taskId, newStatus);
+
+            return NoContent();
+        }
+
+        [HttpGet("project/{projectId}")]
+        public async Task<ActionResult<IEnumerable<TaskItemDtoResponse>>> GetTasks (Guid projectId, TaskItemFilterDto filters)
+        {
+            var tasks = await _taskItemService.FilterTaskItems(projectId, filters);
+
+            return Ok(tasks);          
+        }
+    }
+    
+}

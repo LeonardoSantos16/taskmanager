@@ -39,6 +39,7 @@ namespace taskmanager.Services
             if (taskItemDto.AssignedToId.HasValue){
                 await EnsureAssigneeIsProjectMemberAsync(projectId, taskItemDto.AssignedToId.Value);
             }
+
             ValidateDueDate(taskItemDto.DueDate, DateTime.UtcNow);
             ValidatePriority(taskItemDto.Priority);
             ValidateStatus(taskItemDto.Status);
@@ -53,7 +54,41 @@ namespace taskmanager.Services
             var task = await _taskItemRepository.GetByIdAsync(taskItemId) ?? throw new ArgumentException($"Task with ID {taskItemId} does not exist.");
             await _taskItemRepository.DeleteAsync(task);    
         }
+        public async Task<TaskItemDtoResponse> UpdateTaskItemAsync(TaskItemDtoUpdateRequest taskItemDto, Guid taskItemId)
+        {
+            var taskItem = await _taskItemRepository.GetByIdAsync(taskItemId) ?? throw new ArgumentException("TaskItem not found.");
+            
+            ValidateDueDate(taskItemDto.DueDate, taskItem.CreatedAt);
+            ValidatePriority(taskItemDto.Priority);
+            ValidateStatus(taskItemDto.Status);
 
+            taskItemDto.ApplyToPut(taskItem);
+            var updatedTask = await _taskItemRepository.UpdateAsync(taskItem);
+            return updatedTask.ToDtoResponse();
+        }        
+
+        public async Task<TaskItemDtoResponse> PatchTaskItemAsync(TaskItemDtoPatchRequest taskItemDto, Guid taskItemId)
+        {
+            var taskItem = await _taskItemRepository.GetByIdAsync(taskItemId) ?? throw new ArgumentException("Task not found.");
+            
+            if (taskItemDto.Priority.HasValue)
+                ValidatePriority(taskItemDto.Priority.Value);
+
+            if (taskItemDto.Status.HasValue)
+                ValidateStatus(taskItemDto.Status.Value);
+
+            if (taskItemDto.DueDate.HasValue)
+                ValidateDueDate(taskItemDto.DueDate.Value, taskItem.CreatedAt);
+
+            if (taskItemDto.AssignedToId.HasValue)
+                await EnsureAssigneeIsProjectMemberAsync(taskItem.ProjectId, taskItemDto.AssignedToId.Value);
+
+
+            taskItemDto.ApplyToPatch(taskItem);
+
+            var updatedTask = await _taskItemRepository.UpdateAsync(taskItem);
+            return updatedTask.ToDtoResponse();
+        }
         public async Task<IEnumerable<TaskItemDtoResponse>> FilterTaskItems(Guid projectId, TaskItemFilterDto filters)
         {
             var taskItems = await _taskItemRepository.GetFilteredAsync(projectId, filters);
@@ -61,9 +96,10 @@ namespace taskmanager.Services
             return taskItemResponse;
         }
 
-        public async Task<TaskItem?> GetTaskItemByIdAsync(Guid id)
+        public async Task<TaskItem> GetTaskItemByIdAsync(Guid id)
         {
-            return await _taskItemRepository.GetByIdAsync(id);
+            var taskItem = await _taskItemRepository.GetByIdAsync(id) ?? throw new ArgumentException("Project not found.");
+            return taskItem;
         }
 
         public void ValidateDueDate(DateTime dueDate, DateTime createdDate)
@@ -92,29 +128,6 @@ namespace taskmanager.Services
                 throw new ArgumentException($"The status '{newPriority}' is not a valid value of {nameof(EnumStatusTask)}.");
             }
         }
-      
-        public async Task<TaskItemDtoResponse> PatchTaskItemAsync(TaskItemDtoPatchRequest taskItemDto, Guid taskItemId)
-        {
-            var taskItem = await _taskItemRepository.GetByIdAsync(taskItemId) ?? throw new ArgumentException("Task not found.");
-            
-            if (taskItemDto.Priority.HasValue)
-                ValidatePriority(taskItemDto.Priority.Value);
-
-            if (taskItemDto.Status.HasValue)
-                ValidateStatus(taskItemDto.Status.Value);
-
-            if (taskItemDto.DueDate.HasValue)
-                ValidateDueDate(taskItemDto.DueDate.Value, taskItem.CreatedAt);
-
-            if (taskItemDto.AssignedToId.HasValue)
-                await EnsureAssigneeIsProjectMemberAsync(taskItem.ProjectId, taskItemDto.AssignedToId.Value);
-
-
-            taskItemDto.ApplyToPatch(taskItem);
-
-            var updatedTask = await _taskItemRepository.UpdateAsync(taskItem);
-            return updatedTask.ToDtoResponse();
-        }
 
         public async Task<bool> ProjectExistsAsync(Guid projectId)
         {
@@ -127,19 +140,6 @@ namespace taskmanager.Services
             var taskItem = await _taskItemRepository.GetByIdAsync(taskItemId);
             return taskItem != null;
         }
-
-        public async Task<TaskItemDtoResponse> UpdateTaskItemAsync(TaskItemDtoUpdateRequest taskItemDto, Guid taskItemId)
-        {
-            var taskItem = await _taskItemRepository.GetByIdAsync(taskItemId) ?? throw new ArgumentException("TaskItem not found.");
-            
-            ValidateDueDate(taskItemDto.DueDate, taskItem.CreatedAt);
-            ValidatePriority(taskItemDto.Priority);
-            ValidateStatus(taskItemDto.Status);
-
-            taskItemDto.ApplyToPut(taskItem);
-            var updatedTask = await _taskItemRepository.UpdateAsync(taskItem);
-            return updatedTask.ToDtoResponse();
-        }        
 
         public async Task EnsureAssigneeIsProjectMemberAsync(Guid projectId, Guid assigneeId)
         {
