@@ -8,7 +8,7 @@ using taskmanager.Models;
 
 namespace taskmanager.Repositories
 {
-    public class TaskCommentRepository : Repository<TaskComment>
+    public class TaskCommentRepository : Repository<TaskComment>, ITaskCommentRepository
     {
          public TaskCommentRepository(AppDbContext context) : base(context)
         {
