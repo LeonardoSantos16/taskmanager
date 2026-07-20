@@ -10,6 +10,6 @@ namespace taskmanager.DTOs
     {
         public string? Name { get; init; }
         public string? Description { get; init; }
-        public EnumStatus? Status { get; init; }
+        public EnumProjectStatus? Status { get; init; }
     }
 }

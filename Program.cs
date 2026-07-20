@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using taskmanager.Context;
+using taskmanager.Middleware;
 using taskmanager.Models;
 using taskmanager.Repositories;
 using taskmanager.Services;
@@ -36,7 +37,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+
 app.UseHttpsRedirection();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthorization();
 

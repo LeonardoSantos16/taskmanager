@@ -11,7 +11,7 @@ namespace taskmanager.DTOs
         public Guid? Id { get; init; }
         public string Name { get; init; } = string.Empty;
         public string? Description { get; init; }
-        public EnumStatus Status { get; init; } = EnumStatus.Active;
+        public EnumProjectStatus Status { get; init; } = EnumProjectStatus.Active;
         public Guid OwnerId { get; init; }
     }
 }
