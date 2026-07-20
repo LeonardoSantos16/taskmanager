@@ -11,26 +11,26 @@ namespace taskmanager.Services
     public class TaskCommentService : ITaskCommentService
     {
         private ITaskCommentRepository _commentRepository;
-        private ITaskItemRepository _taskItemRepository;
-        private IUserRepository _userRepository;
+        private ITaskItemService _taskItemService;
+        private IUserService _userService;
 
-        public TaskCommentService(ITaskCommentRepository taskCommentRepository, ITaskItemRepository taskItemRepository, IUserRepository userRepository)
+        public TaskCommentService(ITaskCommentRepository taskCommentRepository, ITaskItemService taskItemService, IUserService userService)
         {
             _commentRepository = taskCommentRepository;
-            _taskItemRepository = taskItemRepository;
-            _userRepository = userRepository;
+            _taskItemService = taskItemService;
+            _userService = userService;
             
         }
         public async Task<TaskCommentDtoResponse> CreateCommentAsync(TaskCommentDtoRequest commentDto, Guid taskItemId, Guid authorId)
         {
-            var taskExist = await _taskItemRepository.GetByIdAsync(taskItemId);
+            var taskExist = await _taskItemService.GetTaskItemByIdAsync(taskItemId);
 
             if (taskExist == null)
             {
                 throw new ArgumentException("task not found");
             }
 
-            var userExist = await _userRepository.GetByIdAsync(authorId);
+            var userExist = await _userService.GetUserById(authorId);
             if (userExist == null)
             {
                 throw new ArgumentException("author not found.");
@@ -56,7 +56,7 @@ namespace taskmanager.Services
 
         public async Task<IEnumerable<TaskCommentDtoResponse>> GetCommentsByTaskItemIdAsync(Guid taskItemId)
         {
-            var taskExists = await _taskItemRepository.GetByIdAsync(taskItemId) ?? throw new ArgumentException($"Task with ID {taskItemId} does not exist.");
+            var taskExists = await _taskItemService.GetTaskItemByIdAsync(taskItemId) ?? throw new ArgumentException($"Task with ID {taskItemId} does not exist.");
             var comments = await _commentRepository.GetByTaskItemIdAsync(taskItemId);
 
             return comments.Select(c => c.ToDtoResponse());
