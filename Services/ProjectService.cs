@@ -89,7 +89,7 @@ namespace taskmanager.Services
             return updatedProject.ToDtoResponse();
         }
 
-        public async Task ChangeProjectStatusAsync(Guid projectId, EnumStatus newStatus)
+        public async Task ChangeProjectStatusAsync(Guid projectId, EnumProjectStatus newStatus)
         {
             var project = await _projectRepository.GetByIdAsync(projectId) ?? throw new ArgumentException("Project not found.");
             if (project != null)
@@ -97,6 +97,12 @@ namespace taskmanager.Services
                 project.Status = newStatus;
                 await _projectRepository.UpdateAsync(project);
             }
+        }
+
+        public void EnsureProjectIsNotArchived(ProjectDtoResponse project)
+        {
+            if (project.Status == EnumProjectStatus.Archived) 
+                throw new InvalidOperationException("Cannot perform this action because the project is archived.");
         }
     }
 }

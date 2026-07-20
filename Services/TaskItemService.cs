@@ -37,6 +37,7 @@ namespace taskmanager.Services
             {
                 throw new ArgumentException($"Project with ID {ProjectId} does not exist.");
             }
+            _projectService.EnsureProjectIsNotArchived(projectExists);
 
             ValidateDueDate(taskItemDto.DueDate, DateTime.UtcNow);
             ValidatePriority(taskItemDto.Priority);

@@ -8,7 +8,7 @@ namespace taskmanager.DTOs.Mappings
 {
     public static class ProjectMemberMappingExtensions
     {
-        public static ProjectMember ToModel(this ProjectMemberDtoRequest request, Guid projectId, User user, Project project)
+        public static ProjectMember ToModel(this ProjectMemberDtoRequest request, Guid projectId)
         {
             return new ProjectMember
             {
@@ -16,8 +16,6 @@ namespace taskmanager.DTOs.Mappings
                 UserId = request.UserId,
                 Role = request.Role,
                 JoinedAt = DateTime.UtcNow,
-                User = user,
-                Project = project
             };
         }
 

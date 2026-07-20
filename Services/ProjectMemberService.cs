@@ -12,17 +12,16 @@ namespace taskmanager.Services
     public class ProjectMemberService : IProjectMemberService
 {
     private readonly IProjectMemberRepository _memberRepository;
-    private readonly IProjectRepository _projectRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IProjectService _projectService;
 
     public ProjectMemberService(
         IProjectMemberRepository memberRepository,
-        IProjectRepository projectRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository, IProjectService projectService)
     {
         _memberRepository = memberRepository;
-        _projectRepository = projectRepository;
         _userRepository = userRepository;
+        _projectService = projectService;
     }
 
     public async Task<ProjectMemberDtoResponse> AddMemberAsync(
@@ -30,12 +29,14 @@ namespace taskmanager.Services
     {
         await EnsureIsOwnerAsync(projectId, requesterId);
 
-        var project = await _projectRepository.GetByIdAsync(projectId);
+        var project = await _projectService.GetProjectByIdAsync(projectId);
         if (project is null)
             throw new ArgumentException($"Project with ID {projectId} does not exist.");
 
-        var user = await _userRepository.GetByIdAsync(dto.UserId);
-        if (user is null)
+        _projectService.EnsureProjectIsNotArchived(project); 
+
+        var userExists = await _userRepository.GetByIdAsync(dto.UserId);
+        if (userExists is null)
             throw new ArgumentException($"User with ID {dto.UserId} does not exist.");
 
         var existingMembership = await _memberRepository.GetMembershipAsync(projectId, dto.UserId);
@@ -44,7 +45,7 @@ namespace taskmanager.Services
 
         ValidateRole(dto.Role);
 
-        var member = dto.ToModel(projectId, user, project);
+        var member = dto.ToModel(projectId);
         var created = await _memberRepository.CreateAsync(member);
         return created.ToDtoResponse();
     }
@@ -73,7 +74,6 @@ namespace taskmanager.Services
             if (member is null)
                 throw new ArgumentException("Member not found.");
 
-            // RN02: apenas o Owner pode remover membros
             await EnsureIsOwnerAsync(member.ProjectId, requesterId);
 
             if (member.Role == EnumRole.Owner)
@@ -84,10 +84,7 @@ namespace taskmanager.Services
 
         public async Task<IEnumerable<ProjectMemberDtoResponse>> GetMembersByProjectIdAsync(Guid projectId)
         {
-            var project = await _projectRepository.GetByIdAsync(projectId);
-            if (project is null)
-                throw new ArgumentException($"Project with ID {projectId} does not exist.");
-
+            var project = await _projectService.GetProjectByIdAsync(projectId) ?? throw new ArgumentException($"Project with ID {projectId} does not exist.");
             var members = await _memberRepository.GetByProjectIdAsync(projectId);
             return members.Select(m => m.ToDtoResponse());
         }

@@ -18,7 +18,7 @@ namespace taskmanager.Models
         public required string Name { get; set; }
         public string? Description { get; set; }
         [Required]
-        public required EnumStatus Status { get; set; }
+        public required EnumProjectStatus Status { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         [Required]
@@ -30,10 +30,5 @@ namespace taskmanager.Models
         public ICollection<TaskItem> Tasks {get; set;} = new List<TaskItem>();
     }
 
-    public enum EnumStatus
-    {
-        Active,
-        Archived,
-        Completed
-    }
+
 }
