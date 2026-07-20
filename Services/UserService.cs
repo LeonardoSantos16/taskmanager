@@ -73,13 +73,7 @@ namespace taskmanager.Services
                 throw new ArgumentException("Invalid password format.");
             }
 
-            var user = await _userRepository.GetByEmailAsync(email);
-
-            if (user == null)
-            {
-                throw new ArgumentException("User not found.");
-            }
-
+            var user = await _userRepository.GetByEmailAsync(email) ?? throw new ArgumentException("User not found.");
             user.PasswordHash = HashPassword(user, newPassword);
             await _userRepository.UpdateAsync(user);
         }
