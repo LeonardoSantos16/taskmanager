@@ -63,12 +63,7 @@ namespace taskmanager.Services
 
         public async Task<ProjectDtoResponse> UpdateProjectAsync(ProjectDtoUpdateRequest projectDto, Guid projectId)
         {
-            var project = await _projectRepository.GetByIdAsync(projectId);
-            if (project == null)
-            {
-                throw new ArgumentException("Project not found.");
-            }
-
+            var project = await _projectRepository.GetByIdAsync(projectId) ?? throw new ArgumentException("Project not found.");
             projectDto.ApplyToPut(project);
 
             var updatedProject = await _projectRepository.UpdateAsync(project);
