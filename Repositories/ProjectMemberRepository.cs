@@ -8,20 +8,11 @@ using taskmanager.Models;
 
 namespace taskmanager.Repositories
 {
-    public class ProjectMemberRepository : IProjectMemberRepository
+    public class ProjectMemberRepository : Repository<ProjectMember>, IProjectMemberRepository
     {
-        private readonly AppDbContext _context;
 
-        public ProjectMemberRepository(AppDbContext context)
+        public ProjectMemberRepository(AppDbContext context): base(context)
         {
-            _context = context;
-        }
-
-        public async Task<ProjectMember?> GetByIdAsync(Guid id)
-        {
-            return await _context.ProjectMembers
-                .Include(m => m.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
         }
 
         public async Task<ProjectMember?> GetMembershipAsync(Guid projectId, Guid userId)
@@ -39,31 +30,6 @@ namespace taskmanager.Repositories
                 .OrderBy(m => m.JoinedAt)
                 .ToListAsync();
         }
-
-        public async Task<ProjectMember> CreateAsync(ProjectMember member)
-        {
-            _context.ProjectMembers.Add(member);
-            await _context.SaveChangesAsync();
-            return member;
-        }
-
-        public async Task<ProjectMember> UpdateAsync(ProjectMember member)
-        {
-            _context.ProjectMembers.Update(member);
-            await _context.SaveChangesAsync();
-            return member;
-        }
-
-        public async Task DeleteAsync(Guid id)
-        {
-            var member = await _context.ProjectMembers.FindAsync(id);
-            if (member is not null)
-            {
-                _context.ProjectMembers.Remove(member);
-                await _context.SaveChangesAsync();
-            }
-        }
-
         public async Task<bool> IsMemberAsync(Guid projectId, Guid userId)
         {
             return await _context.ProjectMembers

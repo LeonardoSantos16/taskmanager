@@ -48,24 +48,29 @@ namespace taskmanager.Repositories
             return await query.OrderBy(t => t.DueDate).ToListAsync();
         }
 
-        public Task<ContStatusTaskDTO> GetTaskStatusCountAsync(Guid projectId)
+        public async Task<ContStatusTaskDTO> GetTaskStatusCountAsync(Guid projectId)
         {
-            var totalTasks = _context.TaskItems.Count(t => t.ProjectId == projectId);
-            var totalTasksToDo = _context.TaskItems.Count(t => t.ProjectId == projectId && t.Status == EnumStatusTask.ToDo);
-            var totalTasksInProgress = _context.TaskItems.Count(t => t.ProjectId == projectId && t.Status == EnumStatusTask.InProgress);
-            var totalTasksDone = _context.TaskItems.Count(t => t.ProjectId == projectId && t.Status == EnumStatusTask.Done);
-            var totalTasksCanceled = _context.TaskItems.Count(t => t.ProjectId == projectId && t.Status == EnumStatusTask.Canceled);
+            var counts = await _context.TaskItems
+                .Where(t => t.ProjectId == projectId)
+                .GroupBy(t => t.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToListAsync();
 
-            var result = new ContStatusTaskDTO
+            return new ContStatusTaskDTO
             {
-                TotalTasks = totalTasks,
-                TotalTasksToDo = totalTasksToDo,
-                TotalTasksInProgress = totalTasksInProgress,
-                TotalTasksDone = totalTasksDone,
-                TotalTasksCanceled = totalTasksCanceled
+                TotalTasks = counts.Sum(c => c.Count),
+                TotalTasksToDo = counts.FirstOrDefault(c => c.Status == EnumStatusTask.ToDo)?.Count ?? 0,
+                TotalTasksInProgress = counts.FirstOrDefault(c => c.Status == EnumStatusTask.InProgress)?.Count ?? 0,
+                TotalTasksDone = counts.FirstOrDefault(c => c.Status == EnumStatusTask.Done)?.Count ?? 0,
+                TotalTasksCanceled = counts.FirstOrDefault(c => c.Status == EnumStatusTask.Canceled)?.Count ?? 0
             };
+        }
 
-            return Task.FromResult(result);
+         public override async Task<TaskItem?> GetByIdAsync(Guid id)
+        {
+            return await _context.TaskItems
+                .Include(t => t.Comments)
+                .FirstOrDefaultAsync(t => t.Id == id);
         }
     }
 }

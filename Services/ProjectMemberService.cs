@@ -73,7 +73,7 @@ namespace taskmanager.Services
             EnsureOwnerIsNotSelfRemoving(member, requesterId);
             await EnsureIsOwnerAsync(member.ProjectId, requesterId);
 
-            await _memberRepository.DeleteAsync(memberId);
+            await _memberRepository.DeleteAsync(member);
         }
 
         public async Task<IEnumerable<ProjectMemberDtoResponse>> GetMembersByProjectIdAsync(Guid projectId)
