@@ -2,14 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using taskmanager.DTOs;
+using taskmanager.Extensions;
 using taskmanager.Services;
 
 namespace taskmanager.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class CommentController : ControllerBase
     {
         private readonly ITaskCommentService _taskCommentService;
@@ -18,18 +21,18 @@ namespace taskmanager.Controllers
             _taskCommentService = taskCommentService;
         }
 
-        [HttpPost("task/{taskId}/author/{authorId}")]
-        public async Task<ActionResult<TaskCommentDtoResponse>> PostComment ([FromBody] TaskCommentDtoRequest commentDto, Guid taskId, Guid authorId)
+        [HttpPost("task/{taskId}")]
+        public async Task<ActionResult<TaskCommentDtoResponse>> PostComment ([FromBody] TaskCommentDtoRequest commentDto, Guid taskId)
         {
-            var comment = await _taskCommentService.CreateCommentAsync(commentDto, taskId, authorId);
+            var comment = await _taskCommentService.CreateCommentAsync(commentDto, taskId, User.GetUserId());
 
             return Ok(comment);
         }
 
-        [HttpDelete("{commentId}/author/{authorId}")]
-        public async Task<ActionResult> DeleteComment (Guid commentId, Guid authorId)
+        [HttpDelete("{commentId}")]
+        public async Task<ActionResult> DeleteComment (Guid commentId)
         {
-            await _taskCommentService.DeleteCommentAsync(commentId, authorId);
+            await _taskCommentService.DeleteCommentAsync(commentId, User.GetUserId());
 
             return NoContent();
         }
@@ -42,10 +45,10 @@ namespace taskmanager.Controllers
             return Ok(comments);
         }
 
-        [HttpPut("{commentId}/author/{authorId}")]
-        public async Task<ActionResult<TaskCommentDtoResponse>> PutComment ([FromBody] TaskCommentDtoRequest commentDto, Guid commentId, Guid authorId)
+        [HttpPut("{commentId}")]
+        public async Task<ActionResult<TaskCommentDtoResponse>> PutComment ([FromBody] TaskCommentDtoRequest commentDto, Guid commentId)
         {
-            var commentUpdated = await _taskCommentService.UpdateCommentAsync(commentDto, commentId, authorId);
+            var commentUpdated = await _taskCommentService.UpdateCommentAsync(commentDto, commentId, User.GetUserId());
 
             return Ok(commentUpdated);
         }

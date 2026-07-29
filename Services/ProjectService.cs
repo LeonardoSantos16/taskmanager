@@ -24,15 +24,10 @@ namespace taskmanager.Services
             return project.ToDtoResponse();
         }
 
-        public async Task<ProjectDtoResponse> CreateProjectAsync(ProjectDtoRequest projectDto)
+        public async Task<ProjectDtoResponse> CreateProjectAsync(ProjectDtoRequest projectDto, Guid ownerId)
         {
-            // TODO: OwnerId validation JWt
-            var ownerExists = await _projectRepository.OwnerExistsAsync(projectDto.OwnerId);
-            if (!ownerExists)
-            {
-                throw new ArgumentException("Owner not found.");
-            }
             var project = projectDto.ToModel();
+            project.OwnerId = ownerId;
 
             var createdProject = await _projectRepository.CreateAsync(project);
             // TODO: implementar o UnitOfWork
@@ -49,13 +44,19 @@ namespace taskmanager.Services
             return createdProject.ToDtoResponse();
         }
 
-        public async Task DeleteProject (Guid projectId, Guid OwnerId)
+        public async Task DeleteProject (Guid projectId, Guid ownerId)
         {
             var project = await _projectRepository.GetByIdAsync(projectId);
             if (project == null)
             {
                 throw new ArgumentException("projectId not found");
             }
+
+            if (project.OwnerId != ownerId)
+            {
+                throw new UnauthorizedAccessException("Only the project owner can delete this project.");
+            }
+
             await _projectRepository.DeleteAsync(project);
         }
 

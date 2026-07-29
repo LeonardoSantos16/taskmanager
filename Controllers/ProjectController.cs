@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using taskmanager.DTOs;
+using taskmanager.Extensions;
 using taskmanager.Models;
 using taskmanager.Services;
 
@@ -11,6 +13,7 @@ namespace taskmanager.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ProjectController : ControllerBase
     {
         private readonly IProjectService _projectService;
@@ -30,14 +33,14 @@ namespace taskmanager.Controllers
         [HttpPost]
         public async Task<ActionResult<ProjectDtoResponse>> CreateProject([FromBody] ProjectDtoRequest projectDto)
         {
-            var createdProject = await _projectService.CreateProjectAsync(projectDto);
+            var createdProject = await _projectService.CreateProjectAsync(projectDto, User.GetUserId());
             return CreatedAtAction(nameof(GetProject), new { id = createdProject.Id }, createdProject);
         }
 
-        [HttpDelete("{projectId}/owner/{ownerId}")]        
-        public async Task<ActionResult> DeleteProject(Guid projectId, Guid ownerId)
+        [HttpDelete("{projectId}")]
+        public async Task<ActionResult> DeleteProject(Guid projectId)
         {
-            await _projectService.DeleteProject(projectId, ownerId);
+            await _projectService.DeleteProject(projectId, User.GetUserId());
 
             return NoContent();
         }

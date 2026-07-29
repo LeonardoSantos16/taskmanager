@@ -49,6 +49,19 @@ namespace taskmanager.Services
             await _userRepository.CreateAsync(user);
         }
 
+        public async Task<User> AuthenticateAsync(string email, string password)
+        {
+            var user = await _userRepository.GetByEmailAsync(email)
+                ?? throw new UnauthorizedAccessException("Invalid email or password.");
+
+            if (!VerifyPassword(user, user.PasswordHash ?? string.Empty, password))
+            {
+                throw new UnauthorizedAccessException("Invalid email or password.");
+            }
+
+            return user;
+        }
+
         public async Task<UserDtoResponse> GetUserById(Guid id)
         {
             var user = await _userRepository.GetByIdAsync(id);

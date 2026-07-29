@@ -10,6 +10,7 @@ namespace taskmanager.Services
     public interface IUserService
     {
         Task RegisterUser(UserDtoRequest userDtoRequest);
+        Task<User> AuthenticateAsync(string email, string password);
         Task<UserDtoResponse> GetUserById(Guid id);
         Task UpdateUserPassword(string email, string newPassword);
         Task UpdateUserName(string email, string newName);

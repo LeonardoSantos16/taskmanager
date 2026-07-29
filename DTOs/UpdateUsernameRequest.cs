@@ -5,5 +5,5 @@ using System.Threading.Tasks;
 
 namespace taskmanager.DTOs
 {
-    public record UpdateUsernameRequest(string Email, string NewName);
+    public record UpdateUsernameRequest(string NewName);
 }

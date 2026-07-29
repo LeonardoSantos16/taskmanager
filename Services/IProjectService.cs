@@ -10,7 +10,7 @@ namespace taskmanager.Services
     public interface IProjectService
     {
         Task<ProjectDtoResponse> GetProjectByIdAsync(Guid id);
-        Task<ProjectDtoResponse> CreateProjectAsync(ProjectDtoRequest projectDto);
+        Task<ProjectDtoResponse> CreateProjectAsync(ProjectDtoRequest projectDto, Guid ownerId);
         Task DeleteProject(Guid projectId, Guid ownerId);
         Task<ProjectDtoResponse> UpdateProjectAsync(ProjectDtoUpdateRequest projectDto, Guid projectId);
         Task<ProjectDtoResponse> PatchProjectAsync(ProjectDtoPatchRequest projectDto, Guid projectId);
