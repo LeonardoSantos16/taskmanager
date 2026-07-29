@@ -12,7 +12,6 @@ namespace taskmanager.Context.Configurations
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.HasIndex(u => u.Email).IsUnique();
         }
     }
 }
