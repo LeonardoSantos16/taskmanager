@@ -1,8 +1,10 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using taskmanager.Authorization;
 using taskmanager.Context;
 using taskmanager.Middleware;
 using taskmanager.Models;
@@ -49,7 +51,18 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AuthorizationPolicies.ProjectMember, policy =>
+        policy.Requirements.Add(new ProjectRoleRequirement(EnumRole.Owner, EnumRole.Editor, EnumRole.Viewer)));
+
+    options.AddPolicy(AuthorizationPolicies.ProjectEditorOrOwner, policy =>
+        policy.Requirements.Add(new ProjectRoleRequirement(EnumRole.Owner, EnumRole.Editor)));
+});
+
+builder.Services.AddScoped<IAuthorizationHandler, ProjectRoleAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, TaskStatusChangeAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, CommentEditAuthorizationHandler>();
 
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();

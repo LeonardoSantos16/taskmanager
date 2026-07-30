@@ -32,7 +32,7 @@ namespace taskmanager.Controllers
         [HttpDelete("{commentId}")]
         public async Task<ActionResult> DeleteComment (Guid commentId)
         {
-            await _taskCommentService.DeleteCommentAsync(commentId, User.GetUserId());
+            await _taskCommentService.DeleteCommentAsync(commentId, User);
 
             return NoContent();
         }
@@ -40,7 +40,7 @@ namespace taskmanager.Controllers
         [HttpGet("{taskId}")]
         public async Task<ActionResult<IEnumerable<TaskCommentDtoResponse>>> GetComments (Guid taskId)
         {
-            var comments = await _taskCommentService.GetCommentsByTaskItemIdAsync(taskId);
+            var comments = await _taskCommentService.GetCommentsByTaskItemIdAsync(taskId, User);
 
             return Ok(comments);
         }
@@ -48,7 +48,7 @@ namespace taskmanager.Controllers
         [HttpPut("{commentId}")]
         public async Task<ActionResult<TaskCommentDtoResponse>> PutComment ([FromBody] TaskCommentDtoRequest commentDto, Guid commentId)
         {
-            var commentUpdated = await _taskCommentService.UpdateCommentAsync(commentDto, commentId, User.GetUserId());
+            var commentUpdated = await _taskCommentService.UpdateCommentAsync(commentDto, commentId, User);
 
             return Ok(commentUpdated);
         }

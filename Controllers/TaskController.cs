@@ -25,7 +25,7 @@ namespace taskmanager.Controllers
         [HttpGet("{taskId}")]
         public async Task<ActionResult<TaskItemDtoResponse>> GetTask(Guid taskId)
         {
-            var task = await _taskItemService.GetTaskItemByIdAsync(taskId);
+            var task = await _taskItemService.GetTaskItemByIdAsync(taskId, User);
 
             return Ok(task);
         }
@@ -33,7 +33,7 @@ namespace taskmanager.Controllers
         [HttpPost("{projectId}")]
         public async Task<ActionResult> CreateTask ([FromBody] TaskItemDtoRequest taskItemDto, Guid projectId)
         {
-            var created = await _taskItemService.CreateTaskItemAsync(taskItemDto, projectId);
+            var created = await _taskItemService.CreateTaskItemAsync(taskItemDto, projectId, User);
 
             return CreatedAtAction(nameof(GetTask), new { taskId = created.Id }, created);
         }
@@ -41,7 +41,7 @@ namespace taskmanager.Controllers
         [HttpDelete("{taskId}")]
         public async Task<ActionResult> DeleteTask(Guid taskId)
         {
-            await _taskItemService.DeleteTaskItemAsync(taskId);
+            await _taskItemService.DeleteTaskItemAsync(taskId, User);
 
             return NoContent();
         }
@@ -49,7 +49,7 @@ namespace taskmanager.Controllers
         [HttpPut("{taskId}")]
         public async Task<ActionResult<TaskItemDtoResponse>> PutTask ([FromBody] TaskItemDtoUpdateRequest taskItemDto, Guid taskId)
         {
-            var taskUpdated = await _taskItemService.UpdateTaskItemAsync(taskItemDto, taskId);
+            var taskUpdated = await _taskItemService.UpdateTaskItemAsync(taskItemDto, taskId, User);
 
             return Ok(taskUpdated);
         }
@@ -57,7 +57,7 @@ namespace taskmanager.Controllers
         [HttpPatch("{taskId}")]
         public async Task<ActionResult<TaskItemDtoResponse>> PatchTask ([FromBody] TaskItemDtoPatchRequest taskItemDto, Guid taskId)
         {
-            var taskUpdated = await _taskItemService.PatchTaskItemAsync(taskItemDto, taskId);
+            var taskUpdated = await _taskItemService.PatchTaskItemAsync(taskItemDto, taskId, User);
 
             return Ok(taskUpdated);
         }
@@ -65,7 +65,7 @@ namespace taskmanager.Controllers
         [HttpPatch("{taskId}/status")]
         public async Task<ActionResult> ChangeStatus (Guid taskId, [FromBody] EnumStatusTask newStatus)
         {
-            await _taskItemService.ChangeTaskItemStatusAsync(taskId, newStatus);
+            await _taskItemService.ChangeTaskItemStatusAsync(taskId, newStatus, User);
 
             return NoContent();
         }
@@ -73,7 +73,7 @@ namespace taskmanager.Controllers
         [HttpGet("project/{projectId}")]
         public async Task<ActionResult<IEnumerable<TaskItemDtoResponse>>> GetTasks (Guid projectId, [FromBody] TaskItemFilterDto filters)
         {
-            var tasks = await _taskItemService.FilterTaskItems(projectId, filters);
+            var tasks = await _taskItemService.FilterTaskItems(projectId, filters, User);
 
             return Ok(tasks);          
         }
