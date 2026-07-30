@@ -2,14 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using taskmanager.DTOs;
+using taskmanager.Extensions;
 using taskmanager.Services;
 
 namespace taskmanager.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ProjectMemberController : ControllerBase
     {
         private readonly IProjectMemberService _projectMemberService;
@@ -18,28 +21,28 @@ namespace taskmanager.Controllers
             _projectMemberService = projectMemberService;
         }
 
-        [HttpPost("project/{projectId}/owner/{ownerId}")]
+        [HttpPost("project/{projectId}")]
         public async Task<ActionResult<ProjectMemberDtoResponse>> CreateMember ([FromBody]
-        ProjectMemberDtoRequest dto, Guid projectId, Guid ownerId)
+        ProjectMemberDtoRequest dto, Guid projectId)
         {
-            var member = await _projectMemberService.AddMemberAsync(dto, projectId, ownerId);
+            var member = await _projectMemberService.AddMemberAsync(dto, projectId, User.GetUserId());
 
             return Ok(member);
         }
 
-        [HttpPut("{memberId}/owner/{ownerId}")]
+        [HttpPut("{memberId}")]
         public async Task<ActionResult<ProjectMemberDtoResponse>> PutMember ([FromBody]
-            ProjectMemberDtoPatchRequest dto, Guid memberId, Guid ownerId)
+            ProjectMemberDtoPatchRequest dto, Guid memberId)
         {
-            var memberUpdated = await _projectMemberService.UpdateMemberRoleAsync(dto, memberId, ownerId);
+            var memberUpdated = await _projectMemberService.UpdateMemberRoleAsync(dto, memberId, User.GetUserId());
 
             return Ok(memberUpdated);
         }
 
-        [HttpDelete("{memberId}/owner/{ownerId}")]
-        public async Task<ActionResult> DeleteMember (Guid memberId, Guid ownerId)
+        [HttpDelete("{memberId}")]
+        public async Task<ActionResult> DeleteMember (Guid memberId)
         {
-            await _projectMemberService.RemoveMemberAsync(memberId, ownerId);
+            await _projectMemberService.RemoveMemberAsync(memberId, User.GetUserId());
 
             return NoContent();
         }

@@ -84,7 +84,7 @@ namespace taskmanager.DTOs.Mappings
             task.UpdatedAt = DateTime.UtcNow;
         }
 
-        private static void UpdateCompletedAt(TaskItem task){
+        public static void UpdateCompletedAt(TaskItem task){
             task.CompletedAt = task.Status == EnumStatusTask.Done
                 ? DateTime.UtcNow
                 : null;
