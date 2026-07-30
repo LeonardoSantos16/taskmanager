@@ -43,7 +43,7 @@ namespace taskmanager.Services
             {
                 throw new ArgumentException("author not found.");
             }
-            var newTask = commentDto.ToModel(taskItemId, authorId);
+            var newTask = commentDto.ToModel(authorId, taskItemId);
             var comment = await _commentRepository.CreateAsync(newTask);
 
             return comment.ToDtoResponse();

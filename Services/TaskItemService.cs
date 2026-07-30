@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using taskmanager.Authorization;
 using taskmanager.DTOs;
 using taskmanager.DTOs.Mappings;
+using taskmanager.Extensions;
 using taskmanager.Models;
 using taskmanager.Repositories;
 
@@ -73,6 +74,7 @@ namespace taskmanager.Services
 
             var taskItem = taskItemDto.ToModel();
             taskItem.ProjectId = projectId;
+            taskItem.CreatedById = currentUser.GetUserId();
             var created = await _taskItemRepository.CreateAsync(taskItem);
 
             return created.ToDtoResponse();
