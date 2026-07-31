@@ -27,6 +27,7 @@ namespace taskmanager.Models
         public DateTime DueDate { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public DateTime? DueSoonNotifiedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
         [ForeignKey(nameof(ProjectId))]
         [JsonIgnore]
@@ -38,6 +39,8 @@ namespace taskmanager.Models
         [JsonIgnore]
         public User? UserCreated {get; set;}
         public ICollection<TaskComment> Comments { get; set; } = new List<TaskComment>();
+        public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
     }
 
 }
