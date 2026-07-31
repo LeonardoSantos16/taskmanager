@@ -11,7 +11,7 @@ namespace taskmanager.Services
     {
         Task RegisterUser(UserDtoRequest userDtoRequest);
         Task<User> AuthenticateAsync(string email, string password);
-        Task<UserDtoResponse> GetUserById(Guid id);
+        Task<UserDtoResponse> GetUserById(Guid id, Guid requesterId);
         Task UpdateUserPassword(string email, string newPassword);
         Task UpdateUserName(string email, string newName);
         Task DeleteUser(Guid id);

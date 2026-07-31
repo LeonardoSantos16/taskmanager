@@ -35,5 +35,16 @@ namespace taskmanager.Repositories
             return await _context.ProjectMembers
                 .AnyAsync(m => m.ProjectId == projectId && m.UserId == userId);
         }
+
+        public async Task<bool> ShareAnyProjectAsync(Guid userId1, Guid userId2)
+        {
+            var projectIdsForUser1 = _context.ProjectMembers
+                .Where(m => m.UserId == userId1)
+                .Select(m => m.ProjectId);
+
+            return await _context.ProjectMembers
+                .Where(m => m.UserId == userId2)
+                .AnyAsync(m => projectIdsForUser1.Contains(m.ProjectId));
+        }
     }
 }

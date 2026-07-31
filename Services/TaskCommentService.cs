@@ -38,7 +38,7 @@ namespace taskmanager.Services
                 throw new ArgumentException("task not found");
             }
 
-            var userExist = await _userService.GetUserById(authorId);
+            var userExist = await _userService.GetUserById(authorId, authorId);
             if (userExist == null)
             {
                 throw new ArgumentException("author not found.");

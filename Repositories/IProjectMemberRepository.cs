@@ -11,5 +11,6 @@ namespace taskmanager.Repositories
         Task<ProjectMember?> GetMembershipAsync(Guid projectId, Guid userId);
         Task<IEnumerable<ProjectMember>> GetByProjectIdAsync(Guid projectId);
         Task<bool> IsMemberAsync(Guid projectId, Guid userId);
+        Task<bool> ShareAnyProjectAsync(Guid userId1, Guid userId2);
     }
 }

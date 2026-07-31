@@ -29,7 +29,7 @@ namespace taskmanager.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDtoResponse>> GetUser(Guid id)
         {
-            var user = await _userService.GetUserById(id);
+            var user = await _userService.GetUserById(id, User.GetUserId());
 
             return Ok(user);
         }

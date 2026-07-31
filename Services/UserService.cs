@@ -14,10 +14,12 @@ namespace taskmanager.Services
     {
         private readonly PasswordHasher<User> _hasher = new();
         private IUserRepository _userRepository;
+        private readonly IProjectMemberRepository _projectMemberRepository;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, IProjectMemberRepository projectMemberRepository)
         {
             _userRepository = userRepository;
+            _projectMemberRepository = projectMemberRepository;
         }
 
         public async Task RegisterUser(UserDtoRequest userDtoRequest)
@@ -62,13 +64,18 @@ namespace taskmanager.Services
             return user;
         }
 
-        public async Task<UserDtoResponse> GetUserById(Guid id)
+        public async Task<UserDtoResponse> GetUserById(Guid id, Guid requesterId)
         {
             var user = await _userRepository.GetByIdAsync(id);
 
             if (user == null)
             {
                 throw new ArgumentException("User not found.");
+            }
+
+            if (id != requesterId && !await _projectMemberRepository.ShareAnyProjectAsync(id, requesterId))
+            {
+                throw new UnauthorizedAccessException("You do not have permission to view this user.");
             }
 
             return new UserDtoResponse
