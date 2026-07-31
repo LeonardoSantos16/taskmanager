@@ -71,7 +71,7 @@ namespace taskmanager.Controllers
         }
 
         [HttpGet("project/{projectId}")]
-        public async Task<ActionResult<IEnumerable<TaskItemDtoResponse>>> GetTasks (Guid projectId, [FromBody] TaskItemFilterDto filters)
+        public async Task<ActionResult<IEnumerable<TaskItemDtoResponse>>> GetTasks (Guid projectId, [FromQuery] TaskItemFilterDto filters)
         {
             var tasks = await _taskItemService.FilterTaskItems(projectId, filters, User);
 
