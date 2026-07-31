@@ -34,11 +34,12 @@ public class SendGridDueSoonEmailSender : IDueSoonEmailSender
             htmlContent: null);
 
         var response = await _client.SendEmailAsync(message, cancellationToken);
+        var responseBody = await response.Body.ReadAsStringAsync(cancellationToken);
+        Console.WriteLine($"[DEBUG] SendGrid response to {toEmail}: {(int)response.StatusCode} {response.StatusCode}. Body: {responseBody}");
 
         if ((int)response.StatusCode >= 400)
         {
-            var body = await response.Body.ReadAsStringAsync(cancellationToken);
-            _logger.LogWarning("SendGrid email to {Email} failed with status {Status}: {Body}", toEmail, response.StatusCode, body);
+            _logger.LogWarning("SendGrid email to {Email} failed with status {Status}: {Body}", toEmail, response.StatusCode, responseBody);
         }
     }
 }

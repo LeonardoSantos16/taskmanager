@@ -32,6 +32,7 @@ public class CheckDueTasks
     {
         var now = DateTime.UtcNow;
         var dueSoonTasks = (await GetDueSoonTasksAsync(now, now.AddHours(24))).ToList();
+        Console.WriteLine($"[DEBUG] dueSoonTasks.Count = {dueSoonTasks.Count}");
 
         if (dueSoonTasks.Count == 0)
         {
@@ -43,7 +44,8 @@ public class CheckDueTasks
 
         foreach (var task in dueSoonTasks)
         {
-            var recipients = BuildNotificationData(task);
+            var recipients = BuildNotificationData(task).ToList();
+            Console.WriteLine($"[DEBUG] Task {task.Id} '{task.Title}': {recipients.Count} recipient(s) -> {string.Join(", ", recipients.Select(r => r.Email))}");
 
             foreach (var recipient in recipients)
             {
@@ -51,19 +53,23 @@ public class CheckDueTasks
                 {
                     await _emailSender.SendDueSoonEmailAsync(
                         recipient.Email, recipient.Name, task.Title, task.Project!.Name, task.DueDate);
+                    Console.WriteLine($"[DEBUG] SendDueSoonEmailAsync returned without throwing for {recipient.Email}");
+
+                    await _notificationRepository.CreateAsync(new Notification
+                    {
+                        UserId = recipient.UserId,
+                        TaskItemId = task.Id,
+                        Message = recipient.Message,
+                        Created = now
+                    });
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine($"[DEBUG] Exception sending to {recipient.Email}: {ex}");
                     _logger.LogError(ex, "Failed to send due-soon email to {Email} for task {TaskId}", recipient.Email, task.Id);
                 }
 
-                await _notificationRepository.CreateAsync(new Notification
-                {
-                    UserId = recipient.UserId,
-                    TaskItemId = task.Id,
-                    Message = recipient.Message,
-                    Created = now
-                });
+
             }
 
             notifiedTaskIds.Add(task.Id);
