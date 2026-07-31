@@ -56,6 +56,8 @@ namespace taskmanager.Services
             }
 
             taskItem.Status = newStatus;
+            taskItem.UpdatedAt = DateTime.UtcNow;
+            TaskItemMappingExtensions.UpdateCompletedAt(taskItem);
             await _taskItemRepository.UpdateAsync(taskItem);
         }
 
