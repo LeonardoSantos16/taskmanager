@@ -22,4 +22,13 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- TaskManager.Functions is a separate SDK-style project nested in this folder;
+         exclude it so its files/build output aren't picked up by this project's default globs. -->
+    <Compile Remove="TaskManager.Functions/**" />
+    <Content Remove="TaskManager.Functions/**" />
+    <EmbeddedResource Remove="TaskManager.Functions/**" />
+    <None Remove="TaskManager.Functions/**" />
+  </ItemGroup>
+
 </Project>
