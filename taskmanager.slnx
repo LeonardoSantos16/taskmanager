@@ -1,3 +1,6 @@
 <Solution>
+  <Folder Name="/TaskManager.Functions/">
+    <Project Path="TaskManager.Functions/TaskManager_Functions.csproj" />
+  </Folder>
   <Project Path="taskmanager.csproj" />
 </Solution>
