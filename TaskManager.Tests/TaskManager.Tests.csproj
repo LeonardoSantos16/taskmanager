@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\taskmanager.csproj" />
+    <ProjectReference Include="..\TaskManager.Functions\TaskManager_Functions.csproj" />
   </ItemGroup>
 
 </Project>
