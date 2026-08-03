@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using taskmanager.Authorization;
 using taskmanager.Repositories;
 using taskmanager.DTOs;
 using taskmanager.Models;
@@ -12,27 +15,37 @@ namespace taskmanager.Services
     {
         private IProjectRepository _projectRepository;
         private readonly IProjectMemberRepository _projectMemberRepository;
-        public ProjectService(IProjectRepository projectRepository, IProjectMemberRepository projectMemberRepository)
+        private readonly IAuthorizationService _authorizationService;
+        public ProjectService(
+            IProjectRepository projectRepository,
+            IProjectMemberRepository projectMemberRepository,
+            IAuthorizationService authorizationService)
         {
             _projectRepository = projectRepository;
             _projectMemberRepository = projectMemberRepository;
+            _authorizationService = authorizationService;
         }
 
-        public async Task<ProjectDtoResponse> GetProjectByIdAsync(Guid id)
+        private async Task EnsureAuthorizedAsync(ClaimsPrincipal currentUser, Guid projectId, string policy)
+        {
+            var result = await _authorizationService.AuthorizeAsync(currentUser, projectId, policy);
+            if (!result.Succeeded)
+            {
+                throw new UnauthorizedAccessException("You do not have access to this project.");
+            }
+        }
+
+        public async Task<ProjectDtoResponse> GetProjectByIdAsync(Guid id, ClaimsPrincipal currentUser)
         {
             var project = await _projectRepository.GetByIdAsync(id) ?? throw new ArgumentException("Project not found.");
+            await EnsureAuthorizedAsync(currentUser, id, AuthorizationPolicies.ProjectMember);
             return project.ToDtoResponse();
         }
 
-        public async Task<ProjectDtoResponse> CreateProjectAsync(ProjectDtoRequest projectDto)
+        public async Task<ProjectDtoResponse> CreateProjectAsync(ProjectDtoRequest projectDto, Guid ownerId)
         {
-            // TODO: OwnerId validation JWt
-            var ownerExists = await _projectRepository.OwnerExistsAsync(projectDto.OwnerId);
-            if (!ownerExists)
-            {
-                throw new ArgumentException("Owner not found.");
-            }
             var project = projectDto.ToModel();
+            project.OwnerId = ownerId;
 
             var createdProject = await _projectRepository.CreateAsync(project);
             // TODO: implementar o UnitOfWork
@@ -49,26 +62,34 @@ namespace taskmanager.Services
             return createdProject.ToDtoResponse();
         }
 
-        public async Task DeleteProject (Guid projectId, Guid OwnerId)
+        public async Task DeleteProject (Guid projectId, Guid ownerId)
         {
             var project = await _projectRepository.GetByIdAsync(projectId);
             if (project == null)
             {
                 throw new ArgumentException("projectId not found");
             }
+
+            if (project.OwnerId != ownerId)
+            {
+                throw new UnauthorizedAccessException("Only the project owner can delete this project.");
+            }
+
             await _projectRepository.DeleteAsync(project);
         }
 
-        public async Task<ProjectDtoResponse> UpdateProjectAsync(ProjectDtoUpdateRequest projectDto, Guid projectId)
+        public async Task<ProjectDtoResponse> UpdateProjectAsync(ProjectDtoUpdateRequest projectDto, Guid projectId, ClaimsPrincipal currentUser)
         {
             var project = await _projectRepository.GetByIdAsync(projectId) ?? throw new ArgumentException("Project not found.");
+            await EnsureAuthorizedAsync(currentUser, projectId, AuthorizationPolicies.ProjectMember);
+
             projectDto.ApplyToPut(project);
 
             var updatedProject = await _projectRepository.UpdateAsync(project);
             return updatedProject.ToDtoResponse();
         }
 
-        public async Task<ProjectDtoResponse> PatchProjectAsync(ProjectDtoPatchRequest projectDto, Guid projectId)
+        public async Task<ProjectDtoResponse> PatchProjectAsync(ProjectDtoPatchRequest projectDto, Guid projectId, ClaimsPrincipal currentUser)
         {
             var project = await _projectRepository.GetByIdAsync(projectId);
             if (project == null)
@@ -76,20 +97,21 @@ namespace taskmanager.Services
                 throw new ArgumentException("Project not found.");
             }
 
+            await EnsureAuthorizedAsync(currentUser, projectId, AuthorizationPolicies.ProjectMember);
+
             projectDto.ApplyToPatch(project);
 
             var updatedProject = await _projectRepository.UpdateAsync(project);
             return updatedProject.ToDtoResponse();
         }
 
-        public async Task ChangeProjectStatusAsync(Guid projectId, EnumProjectStatus newStatus)
+        public async Task ChangeProjectStatusAsync(Guid projectId, EnumProjectStatus newStatus, ClaimsPrincipal currentUser)
         {
             var project = await _projectRepository.GetByIdAsync(projectId) ?? throw new ArgumentException("Project not found.");
-            if (project != null)
-            {
-                project.Status = newStatus;
-                await _projectRepository.UpdateAsync(project);
-            }
+            await EnsureAuthorizedAsync(currentUser, projectId, AuthorizationPolicies.ProjectMember);
+
+            project.Status = newStatus;
+            await _projectRepository.UpdateAsync(project);
         }
 
         public void EnsureProjectIsNotArchived(Project project)

@@ -5,5 +5,5 @@ using System.Threading.Tasks;
 
 namespace taskmanager.DTOs
 {
-    public record UpdatePasswordRequest(string Email, string NewPassword);
+    public record UpdatePasswordRequest(string NewPassword);
 }

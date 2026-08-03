@@ -77,7 +77,7 @@ namespace taskmanager.Services
 
         public async Task<IEnumerable<ProjectMemberDtoResponse>> GetMembersByProjectIdAsync(Guid projectId)
         {
-            var project = await _projectService.GetProjectByIdAsync(projectId) ?? throw new ArgumentException($"Project with ID {projectId} does not exist.");
+            await _projectService.GetProjectEntityByIdAsync(projectId);
             var members = await _memberRepository.GetByProjectIdAsync(projectId);
             return members.Select(m => m.ToDtoResponse());
         }
