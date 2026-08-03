@@ -72,5 +72,27 @@ namespace taskmanager.Repositories
                 .Include(t => t.Comments)
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
+
+        public async Task<IEnumerable<TaskItem>> GetDueSoonAsync(DateTime fromUtc, DateTime toUtc)
+        {
+            return await _context.TaskItems
+                .Where(t => t.DueSoonNotifiedAt == null
+                    && t.DueDate >= fromUtc && t.DueDate <= toUtc
+                    && (t.Status == EnumStatusTask.ToDo || t.Status == EnumStatusTask.InProgress))
+                .Include(t => t.Project).ThenInclude(p => p!.User)
+                .Include(t => t.UserAssigned)
+                .AsNoTracking()
+                .ToListAsync();
+
+        }
+
+        public async Task<int> MarkDueSoonNotifiedAsync(IEnumerable<Guid> taskItemIds, DateTime notifiedAtUtc)
+        {
+            var ids = taskItemIds as ICollection<Guid> ?? taskItemIds.ToList();
+            if (ids.Count == 0) return 0;
+            return await _context.TaskItems
+                .Where(t => ids.Contains(t.Id))
+                .ExecuteUpdateAsync(s => s.SetProperty(t => t.DueSoonNotifiedAt, notifiedAtUtc));
+        }
     }
 }
