@@ -29,7 +29,7 @@ public static class EntityBuilders
         return new User
         {
             Id = userId,
-            Name = name ?? $"User {userId}",
+            Name = name ?? $"User-{userId:N}"[..20],
             UserName = email ?? $"user-{userId}@example.com",
             Email = email ?? $"user-{userId}@example.com"
         };
