@@ -1,9 +1,25 @@
+using System.Security.Claims;
 using taskmanager.Models;
 
 namespace TaskManager.Tests.Helpers;
 
 public static class EntityBuilders
 {
+    public static ClaimsPrincipal CreateClaimsPrincipal(Guid userId, string? email = null)
+    {
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, userId.ToString())
+        };
+
+        if (email is not null)
+            claims.Add(new Claim(ClaimTypes.Email, email));
+
+        var identity = new ClaimsIdentity(claims, authenticationType: "Test");
+        return new ClaimsPrincipal(identity);
+    }
+
+
     public static User CreateUser(
         Guid? id = null,
         string? name = null,
