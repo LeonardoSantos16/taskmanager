@@ -11,6 +11,8 @@ namespace taskmanager.Repositories
     {
         Task<IEnumerable<TaskItem>> GetFilteredAsync(Guid projectId, TaskItemFilterDto filter);
         Task<ContStatusTaskDTO> GetTaskStatusCountAsync(Guid projectId);
+        Task<IEnumerable<TaskItem>> GetDueSoonAsync(DateTime fromUtc, DateTime toUtc);
+        Task<int> MarkDueSoonNotifiedAsync(IEnumerable<Guid> taskItemIds, DateTime notifiedAtUtc);
     }
 }
 
